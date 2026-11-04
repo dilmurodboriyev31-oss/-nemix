@@ -7,7 +7,7 @@
   const LS_C = "nemix_demo_content_v3";
   const LS_S = "nemix_demo_subs_v3";
   const SS_A = "nemix_demo_admin";
-  const COLLECTIONS = ["settings", "features", "courses", "germany", "steps", "news", "vacancies", "reviews"];
+  const COLLECTIONS = ["settings", "features", "courses", "germany", "steps", "news", "vacancies", "reviews", "faq", "teachers", "results"];
 
   const uid = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
   const lsGet = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
@@ -43,6 +43,25 @@
       });
     out.settings = out.settings[0] || {};
     return out;
+  }
+
+  function resizeImage(file, max, q) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        const x = c.getContext("2d");
+        x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+        x.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => (b ? resolve(b) : reject(new Error("Rasm o'qilmadi"))), "image/jpeg", q);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Bu rasm formati qo'llab-quvvatlanmaydi")); };
+      img.src = url;
+    });
   }
 
   const DB = {
@@ -131,6 +150,18 @@
       const { error } = await sb.from("content").insert(rows);
       if (error) throw error;
       return true;
+    },
+
+    // Rasm yuklash: Supabase'da ombor (media), demo rejimda brauzer xotirasi
+    async uploadImage(file) {
+      const blob = await resizeImage(file, hasSb ? 1000 : 640, hasSb ? 0.85 : 0.78);
+      if (!hasSb) {
+        return await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+      }
+      const path = "img/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+      const { error } = await sb.storage.from("media").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+      if (error) throw error;
+      return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
     },
 
     resetDemo() { try { localStorage.removeItem(LS_C); localStorage.removeItem(LS_S); } catch (e) {} },

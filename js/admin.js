@@ -76,6 +76,42 @@
       ],
       defaults: { rating: 5 }
     },
+    faq: {
+      label: "Savol-javoblar", single: "savol",
+      title: (d) => tr(d.q), sub: (d) => (d.category === "consult" ? "Konsultatsiya sahifasida" : "Kurslar sahifasida"),
+      fields: [
+        { k: "category", l: "Qaysi sahifada ko'rinadi", t: "select", o: [["course", "Kurslar sahifasi"], ["consult", "Konsultatsiya sahifasi"]] },
+        { k: "q", l: "Savol", t: "i18n" },
+        { k: "a", l: "Javob", t: "i18n-area" },
+        POS
+      ],
+      defaults: { category: "course" }
+    },
+    teachers: {
+      label: "Ustozlar", single: "ustoz",
+      title: (d) => d.name, sub: (d) => tr(d.role),
+      fields: [
+        { k: "photo", l: "Rasm (kvadrat yoki portret, yuz ko'rinadigan)", t: "image" },
+        { k: "name", l: "Ism-familiya", t: "text" },
+        { k: "role", l: "Lavozim (masalan: Asosiy ustoz, Support ustoz)", t: "i18n" },
+        { k: "bio", l: "Qisqacha ma'lumot (tajriba, sertifikatlar)", t: "i18n-area" },
+        POS
+      ],
+      defaults: {}
+    },
+    results: {
+      label: "Natijalar", single: "natija",
+      title: (d) => d.name + (d.year ? " · " + d.year : ""), sub: (d) => tr(d.result),
+      fields: [
+        { k: "photo", l: "Rasm (bitiruvchi roziligi bilan!)", t: "image" },
+        { k: "name", l: "Ism", t: "text" },
+        { k: "year", l: "Yil (ixtiyoriy)", t: "text" },
+        { k: "result", l: "Natija (masalan: B1 imtihoni topshirdi)", t: "i18n" },
+        { k: "text", l: "Qisqa hikoya yoki fikr", t: "i18n-area" },
+        POS
+      ],
+      defaults: {}
+    },
     features: {
       label: "Afzalliklar", single: "afzallik",
       title: (d) => tr(d.title), sub: (d) => tr(d.text),
@@ -121,7 +157,12 @@
     { k: "instagram", l: "Instagram username yoki havola (ixtiyoriy)", t: "text" },
     { k: "website", l: "Veb-sayt (ixtiyoriy)", t: "text" },
     { k: "address", l: "Manzil", t: "i18n" },
-    { k: "map_url", l: "Xarita havolasi (Google/Yandex xarita linki)", t: "text" },
+    { k: "landmark", l: "Mo'ljal (masalan: «... yonida»)", t: "i18n" },
+    { k: "lat", l: "Joylashuv: kenglik (latitude), masalan 41.2995", t: "text" },
+    { k: "lng", l: "Joylashuv: uzunlik (longitude), masalan 69.2401", t: "text" },
+    { k: "map_url", l: "Google Maps havolasi (ixtiyoriy, bo'lsa shu ochiladi)", t: "text" },
+    { k: "yandex_url", l: "Yandex Maps havolasi (ixtiyoriy, bo'lsa shu ochiladi)", t: "text" },
+    { k: "app_link", l: "Mini app havolasi (bot yaratgach, masalan https://t.me/BOT_NOMI/app). «Ulashish» tugmasi shuni yuboradi", t: "text" },
     { k: "hours", l: "Ish vaqti", t: "i18n" },
     { k: "s1_num", l: "1-statistika: raqam/matn (masalan A1–C1)", t: "text" },
     { k: "s1_label", l: "1-statistika izohi", t: "i18n" },
@@ -131,7 +172,7 @@
     { k: "s3_label", l: "3-statistika izohi", t: "i18n" }
   ];
 
-  const NAV = [["inbox", "📥 Arizalar"], ["courses", "📚 Kurslar"], ["news", "📰 Yangiliklar"], ["vacancies", "💼 Vakansiyalar"], ["reviews", "⭐ Fikrlar"], ["features", "✨ Afzalliklar"], ["germany", "🇩🇪 Germaniya"], ["steps", "🧭 Yo'l xaritasi"], ["settings", "⚙️ Sozlamalar"], ["tools", "🛠 Vositalar"]];
+  const NAV = [["inbox", "📥 Arizalar"], ["courses", "📚 Kurslar"], ["news", "📰 Yangiliklar"], ["vacancies", "💼 Vakansiyalar"], ["teachers", "👩‍🏫 Ustozlar"], ["results", "🏆 Natijalar"], ["reviews", "⭐ Fikrlar"], ["features", "✨ Afzalliklar"], ["germany", "🇩🇪 Konsultatsiya mavzulari"], ["faq", "❓ Savol-javoblar"], ["steps", "🧭 Yo'l xaritasi"], ["settings", "⚙️ Sozlamalar"], ["tools", "🛠 Vositalar"]];
 
   let DATA = null, SUBS = [], tab = "inbox", inboxFilter = "all", session = null;
 
@@ -246,6 +287,7 @@
   function fieldHtml(f, item) {
     const v = item[f.k];
     const label = `<label>${esc(f.l)}</label>`;
+    if (f.t === "image") return `<div class="field">${label}<div class="img-up"><div class="img-prev">${v ? `<img src="${esc(v)}" alt="">` : "📷"}</div><div class="img-act"><input type="file" accept="image/*" data-img="${f.k}" /><button type="button" class="btn btn-ghost btn-sm" data-imgdel="${f.k}">Rasmni olib tashlash</button><small data-imgst></small></div><input type="hidden" name="${f.k}" value="${esc(v || "")}" /></div></div>`;
     if (f.t === "i18n" || f.t === "i18n-area") {
       const obj = typeof v === "object" && v ? v : { uz: v || "" };
       return `<div class="field">${label}<div class="i18n-box">${LG.map(([l, n]) => `<div class="lg"><em>${n}</em>${f.t === "i18n" ? `<input name="${f.k}__${l}" value="${esc(obj[l] || "")}" />` : `<textarea name="${f.k}__${l}">${esc(obj[l] || "")}</textarea>`}</div>`).join("")}</div></div>`;
@@ -273,6 +315,21 @@
       <form class="form form-grid" id="ef">${sc.fields.map((f) => fieldHtml(f, item)).join("")}
       <div class="err" id="ferr"></div>
       <div style="display:flex;gap:10px"><button type="button" class="btn btn-ghost" data-x style="flex:1">Bekor qilish</button><button class="btn btn-primary" type="submit" style="flex:2">Saqlash</button></div></form>`);
+    document.querySelectorAll("#ef [data-img]").forEach((inp) => (inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      const box = inp.closest(".img-up"), st = box.querySelector("[data-imgst]");
+      st.textContent = "Yuklanmoqda…";
+      try {
+        const url = await DB.uploadImage(file);
+        $("#ef").elements[inp.dataset.img].value = url;
+        box.querySelector(".img-prev").innerHTML = `<img src="${url}" alt="">`;
+        st.textContent = "Tayyor ✅ Endi «Saqlash» ni bosing";
+      } catch (e) { st.textContent = "Xatolik: " + (e.message || e); }
+    }));
+    document.querySelectorAll("#ef [data-imgdel]").forEach((b) => (b.onclick = () => {
+      $("#ef").elements[b.dataset.imgdel].value = "";
+      b.closest(".img-up").querySelector(".img-prev").textContent = "📷";
+    }));
     $("#ef").onsubmit = (e) => { e.preventDefault(); guard(async () => {
       const data = readForm(e.target, sc.fields, { id: item.id });
       if (!Object.values(data).some((x) => (typeof x === "object" && x ? Object.values(x).some(Boolean) : x))) return;
