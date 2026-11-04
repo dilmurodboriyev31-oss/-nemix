@@ -4,8 +4,8 @@
   const hasSb = !!(C.SUPABASE_URL && C.SUPABASE_ANON_KEY && window.supabase);
   const sb = hasSb ? window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY) : null;
 
-  const LS_C = "nemix_demo_content_v2";
-  const LS_S = "nemix_demo_subs_v2";
+  const LS_C = "nemix_demo_content_v3";
+  const LS_S = "nemix_demo_subs_v3";
   const SS_A = "nemix_demo_admin";
   const COLLECTIONS = ["settings", "features", "courses", "germany", "steps", "news", "vacancies", "reviews"];
 
@@ -122,10 +122,12 @@
     // Namuna ma'lumotlarni yuklash (faqat bo'sh bo'lsa)
     async seedIfEmpty() {
       const all = await this.loadAll();
-      const has = COLLECTIONS.some((c) => (c === "settings" ? Object.keys(all.settings).length : all[c].length));
-      if (has) return false;
-      if (!hasSb) { lsSet(LS_C, seedRows()); return true; }
-      const rows = seedRows().map(({ collection, position, data }) => ({ collection, position, data }));
+      const empty = COLLECTIONS.filter((c) => (c === "settings" ? !Object.keys(all.settings).length : !all[c].length));
+      // Faqat bo'sh bo'limlarni to'ldiradi; mavjud ma'lumotga tegmaydi
+      const seed = seedRows().filter((r) => empty.includes(r.collection) && r.collection !== "reviews");
+      if (!seed.length) return false;
+      if (!hasSb) { lsSet(LS_C, demoRows().concat(seed)); return true; }
+      const rows = seed.map(({ collection, position, data }) => ({ collection, position, data }));
       const { error } = await sb.from("content").insert(rows);
       if (error) throw error;
       return true;
