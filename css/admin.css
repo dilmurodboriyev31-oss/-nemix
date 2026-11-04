@@ -53,10 +53,3 @@ body { font-size: 14.5px; }
 .mode.live { background: rgba(48, 164, 108, 0.16); color: #30a46c; }
 .empty { padding: 30px; text-align: center; color: var(--muted); }
 @media (min-width: 700px) { .a-list.cols { grid-template-columns: 1fr 1fr; } }
-
-.img-up { display: flex; gap: 14px; align-items: center; }
-.img-prev { width: 84px; height: 84px; border-radius: 16px; background: var(--surface-2); display: grid; place-items: center; font-size: 28px; overflow: hidden; flex: none; }
-.img-prev img { width: 100%; height: 100%; object-fit: cover; }
-.img-act { display: grid; gap: 8px; min-width: 0; }
-.img-act input[type=file] { font-size: 13px; padding: 0; border: 0; background: none; }
-.img-act small { color: var(--muted); font-weight: 700; }

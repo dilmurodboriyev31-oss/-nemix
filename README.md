@@ -18,21 +18,3 @@ Admin: `admin.html`, login `admin`, parol `nemix2026` (faqat demo).
 
 ## Eslatma
 Seed (namuna) ma'lumotlardagi narxlar, telefon, vakansiya — NAMUNA. Admin paneldan haqiqiylariga almashtiring.
-
-## Qo'shimcha sozlamalar (Supabase ulangandan keyin)
-
-### 1. Rasm yuklash (ustozlar va natijalar uchun)
-Supabase > SQL Editor ga `supabase_update.sql` ni joylab Run bosing (bir marta).
-Keyin admin panelda "Ustozlar" va "Natijalar" bo'limlarida rasm yuklash ishlaydi.
-Bitiruvchi rasmini faqat uning roziligi bilan qo'ying.
-
-### 2. Yangi ariza kelganda Telegramga xabar
-1. @BotFather da bot yarating, tokenni oling (tokenni hech kimga bermang).
-2. Botga o'z akkauntingizdan bir marta /start yozing.
-3. @userinfobot ga /start yozing, u sizning ID raqamingizni beradi.
-4. `notify.sql` ni oching, `BOT_TOKEN_SHU_YERGA` va `CHAT_ID_SHU_YERGA` o'rniga o'z qiymatlaringizni yozing.
-5. Supabase > SQL Editor ga joylab Run bosing. Sinash: saytda konsultatsiya arizasini yuboring.
-Token faqat Supabase bazasida, yopiq jadvalda saqlanadi.
-
-### 3. "Do'stlarga ulashish"
-Bot va mini app yaratgach, admin panel > Sozlamalar > "Mini app havolasi" ga `https://t.me/BOT_NOMI/app` ni yozing.
