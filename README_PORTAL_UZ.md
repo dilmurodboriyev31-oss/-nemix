@@ -1,27 +1,28 @@
-# NEMIX — yangi o‘quvchi / o‘qituvchi / admin portali
+# NEMIX — o‘quvchi, o‘qituvchi va administrator portali
 
-## Nimalar qo‘shildi
-- `portal.html`: uch rol uchun yangi portal.
-- O‘quvchi login/parolsiz kiradi: admin yaratgan maxfiy shaxsiy havola/kod orqali. Bu oddiy umumiy havola emas; har o‘quvchiga alohida tasodifiy token beriladi.
-- O‘quvchi kabinetida daraja, guruh, testlar soni, yulduzlar va joriy to‘lov holati.
-- Kunlik testlar A1/A2/B1 darajalari bo‘yicha; to‘g‘ri javoblar yulduz beradi.
-- 300 ta test bajarish — 10 000 so‘m kurs bonusi mezoni (hozircha admin tomonidan tasdiqlanadigan jarayon sifatida ko‘zda tutilgan).
-- O‘qituvchi email/parol bilan kiradi, guruh yaratadi va o‘z guruhiga davomat belgilaydi.
-- Kelmaganlik sababi bazada saqlanadi; o‘qituvchi panelida ko‘rsatilmaydi, admin dashboard RPC javobida mavjud.
-- Admin o‘quvchi yaratadi, shaxsiy havola oladi, guruhlar/o‘quvchilar/to‘lov holatlarini ko‘radi va test savollarini qo‘shadi.
+## Kirish sahifalari
+- O‘quvchi kabineti: `portal.html` — login/parolsiz, lekin admin yaratadigan shaxsiy maxfiy havola/kod bilan.
+- O‘qituvchi kirishi: `teacher.html` — Supabase Auth email/parol bilan.
+- Administrator kirishi: `admin-login.html` (eski `admin.html` manzili ham shu sahifaga yo‘naltiradi).
+- Xodim sahifalari bosh sahifada ko‘rsatilmaydi. URL'ni faqat tegishli xodimlarga yuboring. URL'ni yashirishning o‘zi xavfsizlik emas: rol server tomonda `nemix_profiles` orqali tekshiriladi.
+
+## Portal imkoniyatlari
+- O‘quvchi: daraja va guruh, yulduzlar, testlar soni, 300 test / 10 000 so‘m bonus mezoni, kunlik darajaga mos test, oylik to‘lov holati.
+- O‘qituvchi: faqat o‘z guruhlarini ko‘rish/yaratish va davomat belgilash. Kelmaganlik sababi o‘qituvchi interfeysida qayta ko‘rsatilmaydi.
+- Admin: o‘quvchi yaratish va shaxsiy havola berish, guruhlar, to‘lov holati, test savollari, davomat va kelmaganlik sabablarini ko‘rish.
 
 ## O‘rnatish
-1. ZIP ichidagi barcha fayllarni GitHub repository root'iga yuklang (papka tuzilishini saqlang), mavjud fayllarni almashtiring.
-2. Supabase → SQL Editor'da `supabase_portal.sql` faylini to‘liq ishga tushiring. Bu eski `content` va `submissions` jadvallarini o‘chirmaydi.
-3. Admin Auth UID skriptda oldin bergan UID bilan biriktirilgan. Agar boshqa loyiha bo‘lsa, SQL oxiridagi UID'ni almashtiring.
-4. Supabase → Authentication → Users orqali o‘qituvchilar uchun Auth user yarating.
-5. Har bir o‘qituvchi uchun SQL Editor'da quyidagini bajaring (UID va ismni almashtiring):
+1. ZIP ichidagi papka tuzilishini saqlagan holda repository root'iga yuklang va mavjud fayllarni almashtiring.
+2. Supabase SQL Editor'da `supabase_portal.sql` ni ko‘rib chiqib, to‘liq bir marta ishga tushiring. Skript `auth.users` ichida ko‘rsatilgan admin UUID mavjud bo‘lishini talab qiladi; bu loyiha uchun oldin berilgan UID `292d6a05-d711-4b2b-8b4b-6db30c5f74ed`.
+3. Supabase Authentication → Users orqali xodimlar uchun foydalanuvchi yarating.
+4. Har bir xodimga rol biriktiring. Misol (UID va ismni almashtiring):
    `insert into public.nemix_profiles(user_id,role,full_name) values('TEACHER_AUTH_UID','teacher','O‘qituvchi ismi');`
-6. Saytni oching: `https://dilmurodboriyev31-oss.github.io/-nemix/portal.html`
-7. Admin/xodim email va parol bilan kiradi. Admin `O‘quvchilar` bo‘limidan o‘quvchi yaratadi; hosil bo‘lgan maxfiy havolani o‘quvchiga shaxsiy yuboradi.
+5. `js/config.js` ichida Supabase Project URL va `sb_publishable_...` kaliti to‘g‘ri ekanini tekshiring. Publishable key brauzerda bo‘lishi mumkin; `sb_secret_...`, service-role kaliti yoki DB parolini hech qachon GitHub'ga qo‘ymang.
+6. GitHub Pages deploy tugagach `/portal.html`, `/teacher.html`, `/admin-login.html` manzillarini tekshiring.
+7. Admin xodim panelidan o‘quvchi yaratadi. Tizim maxfiy shaxsiy havola beradi; uni faqat o‘sha o‘quvchiga shaxsiy yuboring.
 
-## Muhim xavfsizlik
-- `sb_publishable_...` kaliti frontend uchun mo‘ljallangan. `sb_secret_...`, service-role kaliti yoki DB parolini hech qachon GitHub'ga joylamang.
-- O‘quvchining shaxsiy URL'i uning kirish kalitidir. Uni ommaga yoki guruh chatiga yubormang. Yo‘qolsa, admin yangi token yaratishi (hozirgi versiyada yangi o‘quvchi profili yaratish) kerak.
-- O‘quvchilar umumiy portal sahifasiga kodsiz kira olmaydi; bu shaxsiy natija va to‘lov ma’lumotlarini himoya qilish uchun zarur.
-- Bu versiya ishga tushirish uchun boshlang‘ich modul. Haqiqiy to‘lov provayderi, bonusni pul sifatida avtomatik chegirish, test bankini kengaytirish, ota-ona kabineti va o‘qituvchiga guruh biriktirish UI keyingi bosqichda qo‘shilishi kerak.
+## Xavfsizlik va muhim cheklovlar
+- O‘quvchi parolsiz kirishi uchun shaxsiy havola bearer-token hisoblanadi. Havolaga ega odam shu kabinetni ochishi mumkin. Uni guruh chatiga yoki ommaga yubormang; yo‘qolsa, eski tokenni bekor qilish/yangi token chiqarish server funksiyasi qo‘shilishi kerak.
+- Admin va o‘qituvchi rollari faqat `nemix_profiles` jadvali va server RPC tekshiruvlari bilan belgilanadi. URL'ni bilish huquq bermaydi.
+- Bu ZIP — portalning boshlang‘ich funksional versiyasi. To‘lovlar qo‘lda status sifatida yuritiladi; Click/Payme integratsiyasi yo‘q. Bonus avtomatik pul to‘lovi emas, admin tasdiqlashi kerak. Kengaytirilgan darslar (audio, video, lug‘at, grammatik modul), to‘liq to‘lov tarixi, tokenni bekor qilish va ko‘p savolli test banki keyingi ishlab chiqish bosqichlari.
+- Deploydan oldin test muhitida sinang va mavjud bazani zaxiralang. Eski `supabase.sql` ni qayta ishga tushirish shart emas; yangi portal uchun alohida `supabase_portal.sql` ishlatiladi.
