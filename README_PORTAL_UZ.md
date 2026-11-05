@@ -26,3 +26,15 @@
 - Admin va o‘qituvchi rollari faqat `nemix_profiles` jadvali va server RPC tekshiruvlari bilan belgilanadi. URL'ni bilish huquq bermaydi.
 - Bu ZIP — portalning boshlang‘ich funksional versiyasi. To‘lovlar qo‘lda status sifatida yuritiladi; Click/Payme integratsiyasi yo‘q. Bonus avtomatik pul to‘lovi emas, admin tasdiqlashi kerak. Kengaytirilgan darslar (audio, video, lug‘at, grammatik modul), to‘liq to‘lov tarixi, tokenni bekor qilish va ko‘p savolli test banki keyingi ishlab chiqish bosqichlari.
 - Deploydan oldin test muhitida sinang va mavjud bazani zaxiralang. Eski `supabase.sql` ni qayta ishga tushirish shart emas; yangi portal uchun alohida `supabase_portal.sql` ishlatiladi.
+
+
+## V2.1 — mobil dizayn va o‘quvchi kirishi
+- Bosh sahifaning yuqori qismidagi suzuvchi “O‘quvchi kabineti” tugmasi olib tashlandi.
+- Kabinetga kirish belgisi pastki navigatsiya paneliga joylashtirildi; til va kunduzgi/tungi rejim tugmalariga tegmaydi.
+- O‘quvchi sahifasida kod kiritish maydoni olib tashlandi. O‘quvchi faqat admin yaratgan maxfiy `portal.html?student=...` shaxsiy havolasi orqali avtomatik kiradi.
+- `?token=...` parametri ham moslik uchun qabul qilinadi.
+- O‘quvchi, o‘qituvchi va admin portallari telefon ekranlariga moslashtirildi: navigatsiya gorizontal aylantiriladi, jadvallar o‘z ichida suriladi, formalar va tugmalar bosishga qulay.
+- JS fayllari `node --check` bilan sintaksis tekshiruvidan o‘tkazildi.
+
+### Yangilash tartibi
+GitHub repository root'iga ZIP ichidagi `Nemix mini app` papkasining ICHIDAGI fayl va papkalarni yuklang (papkaning o‘zini ichma-ich joylamang), mavjud fayllarni almashtiring. GitHub Pages deploy tugagach telefon brauzerida sahifani yangilang. O‘quvchi uchun havolani admin panelidagi “O‘quvchilar” bo‘limidan yarating.

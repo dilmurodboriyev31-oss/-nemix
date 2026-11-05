@@ -35,7 +35,7 @@
       website: "",
       address: L("Toshkent shahri, Uchtepa tumani, 23-mavze, 55/4", "г. Ташкент, Учтепинский район, 23-й квартал, 55/4", "Taschkent, Bezirk Uchtepa, 23. Wohnviertel, 55/4"),
       hours: L("", "", ""),
-      map_url: "",
+      map_url: "https://www.google.com/maps?q=41.290634,69.179546",
       consult_minutes: 15,
       s1_num: "A1–C1", s1_label: L("Barcha darajalar", "Все уровни", "Alle Niveaus"),
       s2_num: "15'", s2_label: L("Bepul konsultatsiya", "Бесплатная консультация", "Kostenlose Beratung"),

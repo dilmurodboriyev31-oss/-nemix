@@ -90,7 +90,7 @@
         <div><b>${esc(s.name || "Nemix")}</b><small>${esc(tr(s.tagline))}</small></div></div>
       <div class="langs">${I18N.LANGS.map((l) => `<button data-lang="${l}" class="${l === I18N.lang ? "on" : ""}">${l.toUpperCase()}</button>`).join("")}</div>
       <button class="icon-btn" data-action="theme" aria-label="${esc(t("theme"))}">${dark ? SVG.sun : SVG.moon}</button>`;
-    $("#tabbar").innerHTML = TABS.map(([id, key, icon]) => `<button class="tab ${route === id ? "on" : ""}" data-nav="${id}">${SVG[icon]}<span>${esc(t(key))}</span></button>`).join("");
+    $("#tabbar").innerHTML = TABS.map(([id, key, icon]) => `<button class="tab ${route === id ? "on" : ""}" data-nav="${id}">${SVG[icon]}<span>${esc(t(key))}</span></button>`).join("") + `<a class="tab portal-tab" href="portal.html" aria-label="O‘quvchi kabineti"><span class="portal-tab-icon">🎓</span><span>Kabinet</span></a>`;
     $("#banner").innerHTML = DB.mode === "demo" ? `<div class="demo-banner">${esc(t("demo_banner"))}</div>` : "";
   }
 
@@ -164,6 +164,20 @@
         ? `<div class="carousel">${S.reviews.map(reviewCard).join("")}</div>`
         : `<div class="card empty">${ico("reviews")}<div>${esc(t("reviews_empty"))}</div></div>`}
       <button class="btn btn-outline btn-block" style="margin-top:6px" data-action="review">★ ${esc(t("leave_review"))}</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>📍 Bizning manzil</h2><p>Nemix nemis tili markaziga tashrif buyuring</p></div></div>
+      <div class="card" style="padding:16px">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px">
+          ${ico("pin")}
+          <div><b>${esc(tr(s.address))}</b><p style="color:var(--muted);font-size:13px;margin-top:5px">41.290634, 69.179546</p></div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-link="https://www.google.com/maps/dir/?api=1&destination=41.290634,69.179546">Google Maps</button>
+          <button class="btn btn-dark" data-link="https://yandex.com/maps/?rtext=~41.290634,69.179546">Yandex Maps</button>
+        </div>
+      </div>
     </section>
     ${footer()}`;
   }

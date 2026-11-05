@@ -5,3 +5,59 @@ body{background:radial-gradient(ellipse at 8% 0%,#e7f3ec 0,transparent 34%),radi
 .wrap{max-width:1080px;padding:28px 20px 64px}.top{padding:10px 2px 18px;border-bottom:1px solid var(--line);margin-bottom:26px}.brand{letter-spacing:-.7px}.brand span{color:var(--green)}
 .hero{position:relative;overflow:hidden;background:linear-gradient(125deg,#123f32,#147451 65%,#21875e);border-radius:28px;padding:34px;color:#fff;box-shadow:0 18px 40px #123f321c;margin-bottom:20px}.hero:after{content:'✦';position:absolute;right:34px;top:8px;font-size:100px;color:#ffffff18}.hero h1{font-size:clamp(25px,4vw,38px);line-height:1.15;max-width:700px;margin:10px 0}.hero p{color:#e0f2e9;max-width:650px;line-height:1.7}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#f8c875}.card{border-radius:22px;padding:26px;box-shadow:0 12px 35px #24382c0a}.login-card{max-width:620px;margin:24px auto}.login-card h2{margin:8px 0}.feature-icon{width:54px;height:54px;border-radius:17px;background:#e9f5ed;display:grid;place-items:center;font-size:27px}.btn{background:linear-gradient(120deg,#146b4b,#1d875d);box-shadow:0 6px 14px #146b4b22;transition:transform .15s,box-shadow .15s}.btn:hover{transform:translateY(-1px);box-shadow:0 9px 18px #146b4b2c}.btn.ghost{box-shadow:none}.nav{position:sticky;top:8px;z-index:5;background:#f7f5f1eF;backdrop-filter:blur(12px);padding:8px;border:1px solid var(--line);border-radius:16px}.nav button{border-radius:11px}.stat{letter-spacing:-1px}.q{background:#fff;border-radius:16px}.notice{border-radius:14px;line-height:1.55}.table{display:block;overflow-x:auto;white-space:nowrap;border-radius:12px}.footer{padding-top:22px;border-top:1px solid var(--line)}input:focus,select:focus,textarea:focus{outline:3px solid #147d5520;border-color:#25835f}
 @media(max-width:640px){.wrap{padding:14px 12px 42px}.hero{padding:24px 20px;border-radius:22px}.card{padding:18px}.nav{position:static}.nav button{flex:1 1 auto}.top{align-items:center}.table td,.table th{padding:9px 8px}}
+
+
+/* Nemix portal responsive polish */
+:root{color-scheme:light}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button,a{touch-action:manipulation}
+.wrap{width:100%;max-width:1080px;margin-inline:auto}
+.top{min-height:44px}
+.brand{letter-spacing:-.6px}
+.card{min-width:0}
+.grid{align-items:stretch}
+.grid>.card{height:100%}
+.hero{box-shadow:0 18px 42px #123f3218}
+.login-card{width:100%}
+.login-card form{max-width:none}
+.login-card input{min-height:48px}
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.nav{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:10px 0 8px}
+.nav button{flex:0 0 auto;white-space:nowrap}
+.table{width:100%;max-width:100%;overflow-x:auto;white-space:nowrap}
+.table td,.table th{vertical-align:middle}
+.q{min-width:0}
+.q .checkrow{display:flex;align-items:center;gap:10px;padding:7px 0}
+.q .checkrow input{width:18px;min-width:18px;height:18px;accent-color:var(--green)}
+.notice{overflow-wrap:anywhere}
+.link{overflow-wrap:anywhere}
+.footer{padding-bottom:env(safe-area-inset-bottom)}
+@media(max-width:700px){
+ .wrap{padding:14px 12px calc(28px + env(safe-area-inset-bottom))}
+ .top{gap:8px;margin-bottom:16px;align-items:center}
+ .brand{font-size:20px}
+ .hero{padding:22px 18px;border-radius:20px}
+ .hero h1{font-size:clamp(23px,6vw,32px);line-height:1.15}
+ .card{padding:17px;border-radius:18px}
+ .login-card{margin:16px auto}
+ .grid{grid-template-columns:1fr 1fr;gap:10px}
+ .stat{font-size:26px;overflow-wrap:anywhere}
+ .nav{position:sticky;top:0;z-index:10;background:#f7f5f1ed;backdrop-filter:blur(12px);margin:0 -12px 14px;padding:9px 12px;border-bottom:1px solid var(--line)}
+ .nav button{font-size:12px;padding:10px 12px}
+ .table{display:block}
+ .table td,.table th{padding:9px 10px;font-size:12px}
+ form{max-width:none}
+ input,select,textarea{min-height:46px}
+ .row{align-items:stretch}
+ .row>*{min-width:0}
+}
+@media(max-width:420px){
+ .grid{grid-template-columns:1fr}
+ .top .small{font-size:11px}
+ .hero p{font-size:14px}
+ .kv{grid-template-columns:95px minmax(0,1fr)}
+ .sub-acts .btn{flex:1 1 100%}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
