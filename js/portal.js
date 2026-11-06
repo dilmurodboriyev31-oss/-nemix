@@ -1,45 +1,416 @@
-(function(){
- const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const cfg=window.NEMIX_CONFIG||{}, ready=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
- const sb=ready?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
- const root=$('#portal');let role='student',student=null,profile=null,tab='overview',groups=[],students=[],tests=[];
- const toast=(m,bad=false)=>{let n=$('#msg');if(n){n.textContent=m;n.className='notice '+(bad?'error':'success');n.classList.remove('hide')}};
- const shell=(title,body,nav='')=>{root.innerHTML=`<header class="top"><div class="brand">🇩🇪 <span>NEMIX</span> portal</div><div class="muted small">${esc(title)}</div></header>${nav}<div id="msg" class="notice hide"></div>${body}<div class="footer">Nemix German Language Center · O‘quv platformasi</div>`};
- const field=(label,name,type='text',required=true)=>`<label>${label}</label><input name="${name}" type="${type}" ${required?'required':''}>`;
- function landing(){
-   const staffPage=document.body.dataset.portalRole==='staff';
-   if(staffPage){
-     const adminPage=document.body.dataset.staffRole==='admin';const roleTitle=adminPage?'Administrator':'O‘qituvchi';
-     shell(roleTitle+' uchun xavfsiz kirish',`<section class="hero staff-hero"><span class="eyebrow">NEMIX · ${adminPage?'ADMINISTRATOR':'O‘QITUVCHI'}</span><h1>${adminPage?'Markaz boshqaruv paneli':'O‘qituvchi ish paneli'}</h1><p>${adminPage?'Markazdagi barcha o‘quvchilar, guruhlar, to‘lovlar va natijalarni boshqarish.':'O‘zingizga biriktirilgan guruhlar va davomatni boshqarish.'}</p></section><section class="card login-card"><h2>🔐 ${roleTitle} tizimiga kirish</h2><p class="muted">Ushbu sahifa faqat Nemix ${roleTitle.toLowerCase()} uchun.</p><form id="staffLogin">${field('Email','email','email')}${field('Parol','password','password')}<button class="btn" style="margin-top:16px;width:100%">Tizimga kirish</button></form><p class="small muted">Kirish sahifasini adashtirdingizmi? <a href="${adminPage?'teacher.html':'admin-login.html'}">${adminPage?'O‘qituvchi':'Administrator'} kirishiga o‘tish</a>.</p></section>`);
-     $('#staffLogin').onsubmit=async e=>{e.preventDefault();if(!sb)return toast('Supabase sozlanmagan. js/config.js ni tekshiring.',true);let d=new FormData(e.target);let {error}=await sb.auth.signInWithPassword({email:d.get('email'),password:d.get('password')});if(error)return toast(error.message,true);await openStaff()};
-   }else{
-     shell('O‘quvchi kabineti',`<section class="hero student-hero"><span class="eyebrow">WILLKOMMEN BEI NEMIX</span><h1>Nemis tilini har kuni o‘rganing 🇩🇪</h1><p>Shaxsiy natijalaringiz, kundalik testlaringiz, yulduzlaringiz va kurs to‘lovlaringiz — barchasi bir joyda.</p></section><section class="card login-card student-entry-card"><div class="feature-icon">🎓</div><h2>Shaxsiy kabinetingiz</h2><p class="muted">O‘quvchilar login, parol yoki kod kiritmaydi. Markaz yuborgan shaxsiy havolani bosing — kabinetingiz avtomatik ochiladi.</p><div class="notice">🔒 Havola shaxsiy kirish kalitingiz hisoblanadi. Uni boshqalarga yubormang. Havolangiz yo‘qolgan bo‘lsa, Nemix markaziga murojaat qiling.</div><a class="btn btn-block" href="index.html">Bosh sahifaga qaytish</a></section>`);
-   }
- }
- async function rpc(name,args={}){if(!sb)throw Error('Supabase ulanmagan');let {data,error}=await sb.rpc(name,args);if(error)throw error;return data}
- async function openStudent(token){try{if(!token)throw Error('Shaxsiy havola/kodni kiriting');student=await rpc('nemix_student_portal',{p_token:token});if(!student)throw Error('Kirish kodi noto‘g‘ri yoki bekor qilingan');sessionStorage.setItem('nemix_student_token',token);role='student';tab='overview';renderStudent()}catch(e){toast(e.message,true)}}
- async function openStaff(){try{let {data:{user}}=await sb.auth.getUser();if(!user)throw Error('Xodim hisobi topilmadi');profile=await rpc('nemix_my_profile');if(!profile||!['admin','teacher'].includes(profile.role))throw Error('Sizga xodim roli biriktirilmagan. Admin Supabase profiles jadvalida rolni belgilashi kerak.');const expected=document.body.dataset.staffRole;if(expected&&profile.role!==expected)throw Error('Bu kirish sahifasi sizning rolingiz uchun emas. Tegishli xodim sahifasidan kiring.');role=profile.role;tab='overview';await loadStaff();renderStaff()}catch(e){toast(e.message,true);await sb.auth.signOut()}}
- const studentNav=()=>`<nav class="nav">${[['overview','Umumiy'],['tests','Kunlik test'],['progress','Natijalar'],['payments','To‘lovlar']].map(([k,v])=>`<button class="btn ${tab===k?'active':''}" data-tab="${k}">${v}</button>`).join('')}<button class="btn ghost" id="exit">Chiqish</button></nav>`;
- function renderStudent(){let p=student.profile||student;let body='';if(tab==='overview')body=`<section class="hero"><h1>Hallo, ${esc(p.full_name||'o‘quvchi')}! 👋</h1><p>${esc(p.level||'A1')} daraja · ${esc(p.group_name||'Guruh biriktirilmagan')}</p><div class="grid"><div><div class="stat">⭐ ${student.points??0}</div><div>Yulduzlar</div></div><div><div class="stat">${student.tests_completed??0}</div><div>Yechilgan testlar</div></div><div><div class="stat">${student.payment_status==='paid'?'To‘langan':'Kutilmoqda'}</div><div>Joriy oy to‘lovi</div></div></div></section><div class="grid"><section class="card"><h3>🎯 Bonus maqsadi</h3><div class="stat">${student.tests_completed??0}/300</div><p class="muted">300 ta test uchun 10 000 so‘m kurs bonusi.</p></section><section class="card"><h3>📚 Bugungi vazifa</h3><p>Darajangizga mos kunlik testni yeching va yulduz to‘plang.</p><button class="btn" data-tab="tests">Testni boshlash</button></section></div>`;
- if(tab==='tests')body=`<section class="card"><h2>🧠 Bugungi nemis tili testi</h2><p class="muted">${esc(p.level||'A1')} darajangiz uchun. Har bir to‘g‘ri javob 1 yulduz beradi. Kuniga bir marta ball hisoblanadi.</p><div id="testArea"><button class="btn" id="loadTest">Bugungi testni yuklash</button></div></section>`;
- if(tab==='progress')body=`<section class="card"><h2>📈 O‘qish natijalari</h2><div class="stat">⭐ ${student.points??0} yulduz</div><p>${student.tests_completed??0} ta test bajarilgan.</p><p class="muted">Yulduzlar 300 taga yetganda admin tomonidan 10 000 so‘mlik kurs bonusi tasdiqlanadi.</p></section>`;
- if(tab==='payments')body=`<section class="card"><h2>💳 Kurs to‘lovlari</h2><p>Joriy oy holati: <b class="${student.payment_status==='paid'?'good':'bad'}">${student.payment_status==='paid'?'To‘langan':'To‘lov kutilmoqda'}</b></p><p class="muted">To‘lov summasi va tarixini markaz administratori yangilaydi. Savollar bo‘lsa, markaz bilan bog‘laning.</p></section>`;
- shell('O‘quvchi kabineti',body,studentNav());root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;renderStudent()});$('#exit').onclick=()=>{sessionStorage.removeItem('nemix_student_token');student=null;landing()};if(tab==='tests')$('#loadTest').onclick=loadTest;}
- async function loadTest(){try{let t=await rpc('nemix_daily_test',{p_token:sessionStorage.getItem('nemix_student_token')});tests=t.questions||[];if(!tests.length)throw Error('Bugun uchun testlar hali qo‘shilmagan. Admin test savollarini kiritishi kerak.');$('#testArea').innerHTML=`<form id="testForm">${tests.map((q,i)=>`<div class="q"><b>${i+1}. ${esc(q.question)}</b>${(q.options||[]).map((o,j)=>`<label class="checkrow"><input type="radio" name="q${i}" value="${j}" required>${esc(o)}</label>`).join('')}</div>`).join('')}<button class="btn">Javoblarni yuborish</button></form>`;$('#testForm').onsubmit=async e=>{e.preventDefault();let answers=tests.map((q,i)=>Number(new FormData(e.target).get('q'+i)));let result=await rpc('nemix_submit_test',{p_token:sessionStorage.getItem('nemix_student_token'),p_answers:answers});toast(`Natija: ${result.correct}/${result.total}. +${result.earned} ⭐`);student=await rpc('nemix_student_portal',{p_token:sessionStorage.getItem('nemix_student_token')});renderStudent()}}catch(e){toast(e.message,true)}}
- const staffNav=()=>`<nav class="nav">${[['overview','Ko‘rsatkichlar'],['groups','Guruhlar'],['students','O‘quvchilar'],['attendance','Davomat'],['tests','Testlar'],['payments','To‘lovlar']].map(([k,v])=>`<button class="btn ${tab===k?'active':''}" data-tab="${k}">${v}</button>`).join('')}<button class="btn ghost" id="exit">Chiqish</button></nav>`;
- async function loadStaff(){let d=await rpc('nemix_staff_dashboard');groups=d.groups||[];students=d.students||[];window.nemixAttendance=d.attendance||[]}
- function renderStaff(){let body='';if(tab==='overview')body=`<div class="grid"><section class="card"><div class="muted">O‘quvchilar</div><div class="stat">${students.length}</div></section><section class="card"><div class="muted">Guruhlar</div><div class="stat">${groups.length}</div></section><section class="card"><div class="muted">Rol</div><div class="stat">${profile.role==='admin'?'Admin':'O‘qituvchi'}</div></section></div><section class="card"><h3>Tezkor ma’lumot</h3><p class="muted">O‘qituvchi faqat o‘ziga biriktirilgan guruhlarni boshqaradi. Davomat sabablari admin ko‘rinishida saqlanadi.</p></section>`;
- if(tab==='groups')body=`<section class="card"><h2>👥 Guruhlar</h2><form id="groupForm">${field('Guruh nomi','name')}${field('Daraja (A1, A2, B1…)','level')}<button class="btn">Guruh yaratish</button></form><table class="table"><tr><th>Guruh</th><th>Daraja</th><th>O‘quvchilar</th></tr>${groups.map(g=>`<tr><td>${esc(g.name)}</td><td>${esc(g.level)}</td><td>${g.student_count||0}</td></tr>`).join('')}</table></section>`;
- if(tab==='students')body=`<section class="card"><h2>🎓 O‘quvchilar</h2>${profile.role==='admin'?`<form id="studentForm">${field('F.I.Sh.','full_name')}${field('Telefon','phone', 'tel')}${field('Daraja','level')}<label>Guruh</label><select name="group_id"><option value="">Guruh tanlang</option>${groups.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select><label>Oylik to‘lov</label><select name="payment_status"><option value="unpaid">To‘lanmagan</option><option value="paid">To‘langan</option></select><button class="btn" style="margin-top:12px">O‘quvchi qo‘shish va shaxsiy havola yaratish</button></form><div id="newStudentLink"></div>`:''}<table class="table"><tr><th>O‘quvchi</th><th>Daraja</th><th>Guruh</th><th>To‘lov</th></tr>${students.map(s=>`<tr><td>${esc(s.full_name)}</td><td>${esc(s.level)}</td><td>${esc(s.group_name||'—')}</td><td>${s.payment_status==='paid'?'To‘langan':'Kutilmoqda'}</td></tr>`).join('')}</table></section>`;
- if(tab==='attendance')body=`<section class="card"><h2>🗓 Davomat</h2><p class="muted">Yo‘qlama va kelmaganlik sababi faqat admin uchun ko‘rinadi.</p>${profile.role==='admin'?`<h3>Admin uchun davomat va sabablar</h3><table class="table"><tr><th>Sana</th><th>O‘quvchi ID</th><th>Holat</th><th>Sabab</th></tr>${(window.nemixAttendance||[]).map(a=>`<tr><td>${esc(a.attendance_date)}</td><td>${esc(a.student_id)}</td><td>${a.present?'Keldi':'Kelmagan'}</td><td>${esc(a.absence_reason||'—')}</td></tr>`).join('')}</table>`:''}<form id="attendanceForm"><label>Guruh</label><select name="group_id" required>${groups.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select><label>Sana</label><input type="date" name="date" value="${new Date().toISOString().slice(0,10)}" required><div id="attendanceList"><p class="muted">Guruhni tanlang.</p></div><button class="btn">Davomatni saqlash</button></form></section>`;
- if(tab==='tests')body=`<section class="card"><h2>🧠 Kunlik test savollari</h2>${profile.role==='admin'?`<form id="questionForm">${field('Daraja','level')} ${field('Savol (nemischa yoki o‘zbekcha)','question')} ${field('1-variant','o1')}${field('2-variant','o2')}${field('3-variant','o3')}${field('4-variant','o4')}<label>To‘g‘ri javob raqami</label><select name="answer"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option></select><button class="btn">Savolni qo‘shish</button></form>`:'<p>Test savollarini admin boshqaradi.</p>'}</section>`;
- if(tab==='payments')body=`<section class="card"><h2>💳 To‘lovlar</h2><p>O‘quvchilarning oylik to‘lov holati.</p><table class="table"><tr><th>O‘quvchi</th><th>Holat</th></tr>${students.map(s=>`<tr><td>${esc(s.full_name)}</td><td>${s.payment_status==='paid'?'To‘langan':'To‘lanmagan'}</td></tr>`).join('')}</table></section>`;
- shell(profile.role==='admin'?'Admin panel':'O‘qituvchi paneli',body,staffNav());root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{tab=b.dataset.tab;await loadStaff();renderStaff()});$('#exit').onclick=async()=>{await sb.auth.signOut();profile=null;landing()};
- if($('#groupForm'))$('#groupForm').onsubmit=async e=>{e.preventDefault();let d=new FormData(e.target);try{await rpc('nemix_create_group',{p_name:d.get('name'),p_level:d.get('level')});await loadStaff();renderStaff()}catch(x){toast(x.message,true)}};
- if($('#studentForm'))$('#studentForm').onsubmit=async e=>{e.preventDefault();let d=new FormData(e.target),token=crypto.randomUUID()+'-'+crypto.randomUUID();try{await rpc('nemix_create_student',{p_full_name:d.get('full_name'),p_phone:d.get('phone'),p_level:d.get('level'),p_group_id:d.get('group_id')||null,p_payment_status:d.get('payment_status'),p_token:token});let url=new URL('portal.html',location.href).href+'?student='+encodeURIComponent(token);$('#newStudentLink').innerHTML=`<div class="notice success">O‘quvchining shaxsiy havolasi: <a class="link" href="${url}">${url}</a><button class="btn secondary" id="copyLink">Havolani nusxalash</button><p class="small">Havolani faqat shu o‘quvchiga yuboring.</p></div>`;$('#copyLink').onclick=()=>navigator.clipboard.writeText(url);await loadStaff();}catch(x){toast(x.message,true)}};
- if($('#attendanceForm')){let sel=$('#attendanceForm [name=group_id]');const fill=async()=>{let ss=students.filter(s=>s.group_id===sel.value);$('#attendanceList').innerHTML=ss.map(s=>`<div class="q"><b>${esc(s.full_name)}</b><div class="row"><label class="checkrow"><input type="checkbox" name="present_${s.id}" checked> Keldi</label><input name="reason_${s.id}" placeholder="Kelmaganlik sababi (faqat admin)" /></div></div>`).join('')};sel.onchange=fill;fill();$('#attendanceForm').onsubmit=async e=>{e.preventDefault();let d=new FormData(e.target),items=students.filter(s=>s.group_id===sel.value).map(s=>({student_id:s.id,present:d.has('present_'+s.id),reason:d.get('reason_'+s.id)||''}));try{await rpc('nemix_save_attendance',{p_group_id:sel.value,p_date:d.get('date'),p_items:items});toast('Davomat saqlandi');}catch(x){toast(x.message,true)}}}
- if($('#questionForm'))$('#questionForm').onsubmit=async e=>{e.preventDefault();let d=new FormData(e.target);try{await rpc('nemix_add_question',{p_level:d.get('level'),p_question:d.get('question'),p_options:[d.get('o1'),d.get('o2'),d.get('o3'),d.get('o4')],p_answer:Number(d.get('answer'))});toast('Savol qo‘shildi')}catch(x){toast(x.message,true)}};
- }
- async function init(){if(!ready){landing();toast('Supabase sozlamasi topilmadi. js/config.js ni tekshiring.',true);return}let staffPage=document.body.dataset.portalRole==='staff';let q=new URLSearchParams(location.search),t=q.get('student')||q.get('token')||sessionStorage.getItem('nemix_student_token');if(!staffPage&&t){await openStudent(t);return}if(staffPage){let {data:{session}}=await sb.auth.getSession();if(session){await openStaff();return}}landing()}
- init().catch(e=>{console.error(e);landing();toast(e.message,true)});
+// O'quvchi shaxsiy kabineti (login/parolsiz). Ma'lumotlar Supabase RPC orqali.
+(function () {
+  const LS_T = "nemix_stoken";
+  const LS_DONE = "nemix_plan_";
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  const money = (n) => Number(n || 0).toLocaleString("ru-RU").replace(/,/g, " ");
+
+  const D = {
+    title: { uz: "Shaxsiy kabinet", ru: "Личный кабинет", de: "Mein Konto" },
+    wsub: { uz: "Login va parolsiz. Ism va telefon yetarli — testlar yeching, ⭐ yig'ing, bonus oling.", ru: "Без логина и пароля. Достаточно имени и телефона — решайте тесты, копите ⭐, получайте бонус.", de: "Ohne Login und Passwort. Name und Telefon genügen — Tests lösen, ⭐ sammeln, Bonus erhalten." },
+    name: { uz: "Ism-familiya", ru: "Имя и фамилия", de: "Vor- und Nachname" },
+    phone: { uz: "Telefon raqam", ru: "Номер телефона", de: "Telefonnummer" },
+    level: { uz: "Darajangiz", ru: "Ваш уровень", de: "Dein Niveau" },
+    start: { uz: "Boshlash", ru: "Начать", de: "Los geht's" },
+    have: { uz: "Kodim bor (boshqa qurilma)", ru: "У меня есть код (другое устройство)", de: "Ich habe einen Code" },
+    code: { uz: "Kirish kodi", ru: "Код входа", de: "Zugangscode" },
+    enter: { uz: "Kirish", ru: "Войти", de: "Anmelden" },
+    back: { uz: "Orqaga", ru: "Назад", de: "Zurück" },
+    bad: { uz: "Ma'lumot noto'g'ri", ru: "Неверные данные", de: "Ungültige Eingabe" },
+    badcode: { uz: "Kod topilmadi", ru: "Код не найден", de: "Code nicht gefunden" },
+    plimit: { uz: "Bu raqam bilan juda ko'p profil ochilgan. Markazga murojaat qiling.", ru: "На этот номер создано слишком много профилей. Обратитесь в центр.", de: "Zu viele Profile mit dieser Nummer. Bitte das Zentrum kontaktieren." },
+    busy: { uz: "Hozir band, birozdan so'ng urinib ko'ring", ru: "Сейчас занято, попробуйте позже", de: "Gerade ausgelastet, später erneut versuchen" },
+    net: { uz: "Aloqa xatosi. Qayta urinib ko'ring.", ru: "Ошибка связи. Попробуйте ещё раз.", de: "Verbindungsfehler. Bitte erneut versuchen." },
+    demo: { uz: "Kabinet faqat Supabase ulangan ilovada ishlaydi.", ru: "Кабинет работает только при подключённом Supabase.", de: "Das Konto funktioniert nur mit Supabase." },
+    savecode: { uz: "Kodingizni saqlang!", ru: "Сохраните код!", de: "Code speichern!" },
+    savecode_t: { uz: "Boshqa telefon yoki yangi qurilmadan kirish uchun shu kod kerak bo'ladi. Skrinshot qiling yoki yozib qo'ying.", ru: "Этот код нужен для входа с другого телефона или устройства. Сделайте скриншот или запишите.", de: "Mit diesem Code meldest du dich auf einem anderen Gerät an. Mach einen Screenshot oder schreib ihn auf." },
+    copy: { uz: "Nusxa olish", ru: "Копировать", de: "Kopieren" },
+    copied: { uz: "Nusxalandi", ru: "Скопировано", de: "Kopiert" },
+    saved: { uz: "Saqladim, davom etaman", ru: "Сохранил(а), продолжить", de: "Gespeichert, weiter" },
+    t_home: { uz: "Asosiy", ru: "Главная", de: "Start" },
+    t_test: { uz: "Test", ru: "Тест", de: "Test" },
+    t_pay: { uz: "To'lov", ru: "Оплата", de: "Zahlung" },
+    t_learn: { uz: "O'rganish", ru: "Учёба", de: "Lernen" },
+    t_top: { uz: "Reyting", ru: "Рейтинг", de: "Rangliste" },
+    unver: { uz: "Profilingiz markaz tomonidan tasdiqlanishi kutilmoqda. Tasdiqlangach reyting va bonus ochiladi.", ru: "Ожидает подтверждения центром. После подтверждения откроются рейтинг и бонус.", de: "Dein Profil wartet auf Bestätigung durch das Zentrum. Danach sind Rangliste und Bonus freigeschaltet." },
+    ver: { uz: "Tasdiqlangan", ru: "Подтверждён", de: "Bestätigt" },
+    stars: { uz: "yulduzcha", ru: "звёзд", de: "Sterne" },
+    avail: { uz: "Hisobingizda", ru: "На счёте", de: "Guthaben" },
+    today: { uz: "Bugun", ru: "Сегодня", de: "Heute" },
+    streak: { uz: "Ketma-ket kun", ru: "Дней подряд", de: "Tage in Folge" },
+    group: { uz: "Guruhim", ru: "Моя группа", de: "Meine Gruppe" },
+    nogroup: { uz: "Hali guruhga biriktirilmagansiz. Markaz sizni guruhga qo'shadi.", ru: "Вы пока не в группе. Центр добавит вас в группу.", de: "Du bist noch keiner Gruppe zugeordnet." },
+    teacher: { uz: "Ustoz", ru: "Преподаватель", de: "Lehrkraft" },
+    sched: { uz: "Dars jadvali", ru: "Расписание", de: "Stundenplan" },
+    att: { uz: "Davomat (60 kun)", ru: "Посещаемость (60 дней)", de: "Anwesenheit (60 Tage)" },
+    present: { uz: "Keldi", ru: "Был", de: "Da" },
+    late: { uz: "Kechikdi", ru: "Опоздал", de: "Spät" },
+    absent: { uz: "Kelmadi", ru: "Не был", de: "Fehlt" },
+    route: { uz: "Germaniya yo'li", ru: "Путь в Германию", de: "Weg nach Deutschland" },
+    route_t: { uz: "Har 60 ⭐ da yangi shaharga yetib borasiz.", ru: "Каждые 60 ⭐ — новый город.", de: "Alle 60 ⭐ erreichst du eine neue Stadt." },
+    bonus: { uz: "Bonus", ru: "Бонус", de: "Bonus" },
+    bonus_t: { uz: "{n} ⭐ to'plang va kurs to'lovidan {m} so'm chegirma oling.", ru: "Соберите {n} ⭐ и получите скидку {m} сум на оплату курса.", de: "Sammle {n} ⭐ und erhalte {m} so'm Rabatt auf die Kursgebühr." },
+    redeem: { uz: "Bonusga almashtirish", ru: "Обменять на бонус", de: "Gegen Bonus einlösen" },
+    redeemed: { uz: "So'rov yuborildi! Markaz tasdiqlagach chegirma to'lovingizga qo'shiladi.", ru: "Заявка отправлена! После подтверждения скидка добавится к оплате.", de: "Anfrage gesendet! Nach Bestätigung wird der Rabatt verrechnet." },
+    need_more: { uz: "Yetarli ⭐ yo'q", ru: "Недостаточно ⭐", de: "Nicht genug ⭐" },
+    need_ver: { uz: "Avval profil tasdiqlanishi kerak", ru: "Сначала нужно подтверждение профиля", de: "Profil muss zuerst bestätigt werden" },
+    pending: { uz: "Oldingi so'rov ko'rib chiqilmoqda", ru: "Предыдущая заявка рассматривается", de: "Vorherige Anfrage wird geprüft" },
+    st_pending: { uz: "Kutilmoqda", ru: "Ожидает", de: "Offen" },
+    st_approved: { uz: "Tasdiqlandi", ru: "Одобрено", de: "Genehmigt" },
+    st_rejected: { uz: "Rad etildi", ru: "Отклонено", de: "Abgelehnt" },
+    daily: { uz: "Kunlik test", ru: "Тест дня", de: "Tagestest" },
+    daily_t: { uz: "{lv} darajasiga mos savollar. To'g'ri javob = 1 ⭐.", ru: "Вопросы уровня {lv}. Верный ответ = 1 ⭐.", de: "Fragen für Niveau {lv}. Richtige Antwort = 1 ⭐." },
+    go: { uz: "Testni boshlash", ru: "Начать тест", de: "Test starten" },
+    next: { uz: "Keyingisi", ru: "Дальше", de: "Weiter" },
+    finish: { uz: "Yakunlash", ru: "Завершить", de: "Beenden" },
+    ok: { uz: "To'g'ri! +1 ⭐", ru: "Верно! +1 ⭐", de: "Richtig! +1 ⭐" },
+    no: { uz: "Noto'g'ri", ru: "Неверно", de: "Falsch" },
+    right_is: { uz: "To'g'ri javob", ru: "Правильный ответ", de: "Richtige Antwort" },
+    capped: { uz: "Bugungi ⭐ limiti tugadi ({n}). Ertaga yangi savollar sizni kutadi!", ru: "Дневной лимит ⭐ исчерпан ({n}). Завтра — новые вопросы!", de: "Tageslimit erreicht ({n} ⭐). Morgen gibt es neue Fragen!" },
+    empty: { uz: "Bu darajadagi savollar tugadi. Yangi savollar qo'shilishini kuting.", ru: "Вопросы этого уровня закончились. Скоро добавим новые.", de: "Für dieses Niveau gibt es keine neuen Fragen mehr." },
+    result: { uz: "Natija", ru: "Результат", de: "Ergebnis" },
+    pay_t: { uz: "Oylik to'lovlar", ru: "Ежемесячные платежи", de: "Monatliche Zahlungen" },
+    nopay: { uz: "Hozircha to'lov yozuvlari yo'q.", ru: "Записей об оплате пока нет.", de: "Noch keine Zahlungen erfasst." },
+    paid: { uz: "To'langan", ru: "Оплачено", de: "Bezahlt" },
+    partial: { uz: "Qisman", ru: "Частично", de: "Teilweise" },
+    unpaid: { uz: "To'lanmagan", ru: "Не оплачено", de: "Offen" },
+    due: { uz: "To'lov", ru: "К оплате", de: "Betrag" },
+    disc: { uz: "Chegirma", ru: "Скидка", de: "Rabatt" },
+    paidamt: { uz: "To'langan", ru: "Оплачено", de: "Gezahlt" },
+    left: { uz: "Qoldi", ru: "Осталось", de: "Rest" },
+    plan: { uz: "Bugungi reja", ru: "План на сегодня", de: "Heutiger Plan" },
+    mats: { uz: "Materiallar", ru: "Материалы", de: "Materialien" },
+    nomats: { uz: "Materiallar tez orada qo'shiladi.", ru: "Материалы скоро появятся.", de: "Materialien folgen bald." },
+    open: { uz: "Ochish", ru: "Открыть", de: "Öffnen" },
+    top_t: { uz: "Shu oy eng ko'p ⭐ yig'ganlar", ru: "Больше всего ⭐ в этом месяце", de: "Die meisten ⭐ in diesem Monat" },
+    notop: { uz: "Reyting hali bo'sh. Birinchi bo'ling!", ru: "Рейтинг пока пуст. Станьте первым!", de: "Noch keine Einträge. Sei der Erste!" },
+    prof: { uz: "Profil", ru: "Профиль", de: "Profil" },
+    save: { uz: "Saqlash", ru: "Сохранить", de: "Speichern" },
+    newcode: { uz: "Yangi kirish kodi olish", ru: "Получить новый код входа", de: "Neuen Code erzeugen" },
+    logout: { uz: "Bu qurilmadan chiqish", ru: "Выйти на этом устройстве", de: "Auf diesem Gerät abmelden" },
+    logout_q: { uz: "Chiqsangiz, qayta kirish uchun kod kerak bo'ladi. Chiqasizmi?", ru: "После выхода понадобится код для входа. Выйти?", de: "Zum erneuten Anmelden brauchst du den Code. Abmelden?" },
+    loading: { uz: "Yuklanmoqda…", ru: "Загрузка…", de: "Lädt…" }
+  };
+  const PLAN = {
+    uz: ["Kunlik testni yeching (10 ta savol)", "5 ta yangi so'z yodlang va gap tuzing", "10 daqiqa nemischa audio/video tinglang", "Darsdagi mavzuni 15 daqiqa takrorlang", "Bitta gapni nemischa yozing"],
+    ru: ["Решите тест дня (10 вопросов)", "Выучите 5 новых слов и составьте предложения", "10 минут слушайте немецкое аудио/видео", "Повторите тему урока 15 минут", "Напишите одно предложение по-немецки"],
+    de: ["Tagestest lösen (10 Fragen)", "5 neue Wörter lernen und Sätze bilden", "10 Minuten deutsches Audio/Video hören", "Unterrichtsthema 15 Minuten wiederholen", "Einen Satz auf Deutsch schreiben"]
+  };
+  const CITIES = ["Berlin", "München", "Hamburg", "Köln", "Frankfurt"];
+  const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
+  const MONTHS = { uz: ["yan", "fev", "mar", "apr", "may", "iyun", "iyul", "avg", "sen", "okt", "noy", "dek"], ru: ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"], de: ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"] };
+
+  const L = () => (window.I18N && I18N.lang) || "uz";
+  const p = (k, v) => {
+    let s = (D[k] && (D[k][L()] || D[k].uz)) || k;
+    if (v) Object.keys(v).forEach((x) => (s = s.replace("{" + x + "}", v[x])));
+    return s;
+  };
+  const monthName = (ym) => { const [y, m] = String(ym).split("-"); return (MONTHS[L()] || MONTHS.uz)[Number(m) - 1] + " " + y; };
+
+  const St = { host: null, me: null, tab: "home", quiz: null, view: "welcome", newCode: null, busy: false, err: "" };
+  const token = () => lsGet(LS_T);
+
+  async function call(fn, args) {
+    try { return await DB.rpc(fn, args); } catch (e) { return { ok: false, error: "net" }; }
+  }
+  function toast(m) { const el = document.createElement("div"); el.className = "toast"; el.textContent = m; document.body.appendChild(el); setTimeout(() => el.remove(), 2200); }
+  function tgInfo() {
+    try { const u = window.Telegram.WebApp.initDataUnsafe.user; return u ? { id: u.id, un: u.username || null } : {}; } catch (e) { return {}; }
+  }
+  const errText = (e) => (e === "phone_limit" ? p("plimit") : e === "busy" ? p("busy") : e === "net" ? p("net") : e === "invalid" ? p("bad") : p("bad"));
+
+  // ---------- Kirish oynasi ----------
+  function welcome() {
+    if (DB.mode === "demo") return `<div class="pt-wrap"><div class="pt-hero"><div class="pt-emoji">🔒</div><h2>${esc(p("title"))}</h2><p>${esc(p("demo"))}</p></div></div>`;
+    const lv = LEVELS.map((l) => `<option value="${l}">${l}</option>`).join("");
+    if (St.view === "restore") {
+      return `<div class="pt-wrap"><div class="pt-hero"><div class="pt-emoji">🔑</div><h2>${esc(p("have"))}</h2></div>
+        <form class="card pt-card" data-pform="restore">
+          <div class="field"><label>${esc(p("code"))}</label><input name="code" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="xxxx xxxx xxxx" required /></div>
+          ${St.err ? `<div class="pt-err">${esc(St.err)}</div>` : ""}
+          <button class="btn btn-primary btn-block" ${St.busy ? "disabled" : ""}>${esc(p("enter"))}</button>
+          <button type="button" class="btn btn-ghost btn-block" data-p="view" data-v="welcome" style="margin-top:8px">${esc(p("back"))}</button>
+        </form></div>`;
+    }
+    return `<div class="pt-wrap"><div class="pt-hero"><div class="pt-emoji">⭐</div><h2>${esc(p("title"))}</h2><p>${esc(p("wsub"))}</p></div>
+      <form class="card pt-card" data-pform="register">
+        <div class="field"><label>${esc(p("name"))}</label><input name="name" autocomplete="name" maxlength="80" required /></div>
+        <div class="field"><label>${esc(p("phone"))}</label><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" maxlength="30" required /></div>
+        <div class="field"><label>${esc(p("level"))}</label><select name="level">${lv}</select></div>
+        ${St.err ? `<div class="pt-err">${esc(St.err)}</div>` : ""}
+        <button class="btn btn-primary btn-block" ${St.busy ? "disabled" : ""}>${esc(p("start"))}</button>
+      </form>
+      <button class="pt-link" data-p="view" data-v="restore">${esc(p("have"))}</button></div>`;
+  }
+
+  function codeScreen() {
+    const c = St.newCode.match(/.{1,4}/g).join(" ");
+    return `<div class="pt-wrap"><div class="pt-hero"><div class="pt-emoji">🔐</div><h2>${esc(p("savecode"))}</h2><p>${esc(p("savecode_t"))}</p></div>
+      <div class="card pt-card"><div class="pt-code">${esc(c)}</div>
+        <button class="btn btn-ghost btn-block" data-p="copycode">${esc(p("copy"))}</button>
+        <button class="btn btn-primary btn-block" data-p="codedone" style="margin-top:8px">${esc(p("saved"))}</button></div></div>`;
+  }
+
+  // ---------- Kabinet ----------
+  function cabinet() {
+    const m = St.me;
+    const tabs = [["home", "t_home"], ["test", "t_test"], ["pay", "t_pay"], ["learn", "t_learn"], ["top", "t_top"]];
+    const ini = esc((m.name || "?").trim().charAt(0).toUpperCase());
+    return `<div class="pt-wrap">
+      <div class="card pt-me"><div class="pt-av">${ini}</div>
+        <div class="pt-me-t"><b>${esc(m.name)}</b><span>${m.verified ? "✅ " + esc(p("ver")) : "⏳ " + esc(p("st_pending"))}</span></div>
+        <span class="lvl pt-lvl">${esc(m.level)}</span></div>
+      ${m.verified ? "" : `<div class="pt-note">⏳ ${esc(p("unver"))}</div>`}
+      <div class="pt-tabs" role="tablist">${tabs.map(([id, k]) => `<button class="pt-tab ${St.tab === id ? "on" : ""}" data-p="tab" data-v="${id}">${esc(p(k))}</button>`).join("")}</div>
+      <div id="pt-body">${body()}</div></div>`;
+  }
+  function body() {
+    return ({ home: tHome, test: tTest, pay: tPay, learn: tLearn, top: tTop }[St.tab] || tHome)();
+  }
+
+  function statBox(v, l) { return `<div class="pt-stat"><b>${v}</b><span>${esc(l)}</span></div>`; }
+
+  function tHome() {
+    const m = St.me, s = m.stars, b = m.bonus;
+    const pct = Math.min(100, Math.round((s.available / b.stars) * 100));
+    const city = Math.min(CITIES.length, Math.floor(s.total / 60));
+    const route = CITIES.map((c, i) => `<div class="pt-city ${i < city ? "on" : ""} ${i === city ? "next" : ""}"><i>${i < city ? "★" : i + 1}</i><span>${c}</span></div>`).join("");
+    const g = m.group;
+    const a = m.att;
+    const red = (m.redemptions || []).map((r) => `<div class="pt-row"><span>${money(r.amount)} so'm</span><span class="pt-badge ${r.status}">${esc(p("st_" + r.status))}</span></div>`).join("");
+    return `
+      <div class="pt-stats">${statBox("⭐ " + s.available, p("avail"))}${statBox(s.today + "/" + s.cap, p("today"))}${statBox("🔥 " + (m.streak || 0), p("streak"))}</div>
+      <div class="card pt-card"><h3>🥨 ${esc(p("bonus"))}</h3>
+        <p class="pt-mut">${esc(p("bonus_t", { n: b.stars, m: money(b.amount) }))}</p>
+        <div class="pt-bar"><i style="width:${pct}%"></i></div><div class="pt-bar-l"><span>${s.available} / ${b.stars} ⭐</span><span>${pct}%</span></div>
+        <button class="btn btn-primary btn-block" data-p="redeem" ${s.available >= b.stars ? "" : "disabled"}>${esc(p("redeem"))}</button>
+        ${red ? `<div class="pt-list">${red}</div>` : ""}</div>
+      <div class="card pt-card"><h3>🇩🇪 ${esc(p("route"))}</h3><p class="pt-mut">${esc(p("route_t"))}</p><div class="pt-route">${route}</div></div>
+      <div class="card pt-card"><h3>👥 ${esc(p("group"))}</h3>
+        ${g ? `<div class="pt-row"><b>${esc(g.name)}</b></div>
+          ${g.teacher ? `<div class="pt-row"><span class="pt-mut">${esc(p("teacher"))}</span><span>${esc(g.teacher)}</span></div>` : ""}
+          ${g.schedule ? `<div class="pt-row"><span class="pt-mut">${esc(p("sched"))}</span><span>${esc(g.schedule)}</span></div>` : ""}`
+        : `<p class="pt-mut">${esc(p("nogroup"))}</p>`}</div>
+      <div class="card pt-card"><h3>📅 ${esc(p("att"))}</h3>
+        <div class="pt-att"><div class="ok"><b>${a.present}</b><span>${esc(p("present"))}</span></div><div class="lt"><b>${a.late}</b><span>${esc(p("late"))}</span></div><div class="no"><b>${a.absent}</b><span>${esc(p("absent"))}</span></div></div>
+        ${(a.recent || []).length ? `<div class="pt-dots">${a.recent.slice().reverse().map((r) => `<i class="${r.status}" title="${esc(r.day)}"></i>`).join("")}</div>` : ""}</div>
+      <div class="card pt-card"><h3>👤 ${esc(p("prof"))}</h3>
+        <form data-pform="profile"><div class="field"><label>${esc(p("name"))}</label><input name="name" value="${esc(m.name)}" maxlength="80" required /></div>
+        <div class="field"><label>${esc(p("phone"))}</label><input name="phone" type="tel" value="${esc(m.phone || "")}" maxlength="30" required /></div>
+        <button class="btn btn-ghost btn-block">${esc(p("save"))}</button></form>
+        <button class="btn btn-outline btn-block" data-p="newcode" style="margin-top:8px">${esc(p("newcode"))}</button>
+        <button class="pt-link" data-p="logout">${esc(p("logout"))}</button></div>`;
+  }
+
+  function tTest() {
+    const m = St.me, q = St.quiz;
+    if (!q) {
+      return `<div class="card pt-card pt-center"><div class="pt-emoji">📝</div><h3>${esc(p("daily"))}</h3>
+        <p class="pt-mut">${esc(p("daily_t", { lv: m.level }))}</p>
+        <div class="pt-stats" style="grid-template-columns:1fr 1fr">${statBox("⭐ " + m.stars.available, p("avail"))}${statBox(m.stars.today + "/" + m.stars.cap, p("today"))}</div>
+        <button class="btn btn-primary btn-block" data-p="quiz" ${St.busy ? "disabled" : ""}>${esc(p("go"))}</button></div>`;
+    }
+    if (q.end) {
+      let msg = "";
+      if (q.capped) msg = p("capped", { n: m.stars.cap });
+      else if (!q.items.length) msg = p("empty");
+      return `<div class="card pt-card pt-center"><div class="pt-emoji">${q.capped ? "🌙" : "🏁"}</div><h3>${esc(p("result"))}: ${q.ok} / ${q.done}</h3>
+        ${msg ? `<p class="pt-mut">${esc(msg)}</p>` : ""}
+        <button class="btn btn-primary btn-block" data-p="quizclose">${esc(p("finish"))}</button></div>`;
+    }
+    const it = q.items[q.i];
+    const opts = it.options.map((o, i) => {
+      let cls = "";
+      if (q.res) cls = i === q.res.answer ? "good" : i === q.pick ? "bad" : "";
+      return `<button class="pt-opt ${cls}" data-p="pick" data-v="${i}" ${q.res || St.busy ? "disabled" : ""}><i>${"ABCD"[i]}</i><span>${esc(o)}</span></button>`;
+    }).join("");
+    let fb = "";
+    if (q.res) {
+      fb = `<div class="pt-fb ${q.res.correct ? "good" : "bad"}"><b>${esc(q.res.correct ? p("ok") : p("no"))}</b>${q.res.correct ? "" : `<div>${esc(p("right_is"))}: ${esc(it.options[q.res.answer])}</div>`}${q.res.explain ? `<div class="pt-mut">${esc(q.res.explain)}</div>` : ""}</div>
+        <button class="btn btn-primary btn-block" data-p="nextq">${esc(q.i + 1 >= q.items.length ? p("finish") : p("next"))}</button>`;
+    }
+    return `<div class="card pt-card"><div class="pt-qh"><span>${q.i + 1} / ${q.items.length}</span><span>⭐ ${m.stars.today}/${m.stars.cap}</span></div>
+      <div class="pt-bar"><i style="width:${Math.round((q.i / q.items.length) * 100)}%"></i></div>
+      <div class="pt-q">${esc(it.q)}</div><div class="pt-opts">${opts}</div>${fb}</div>`;
+  }
+
+  function tPay() {
+    const ps = St.me.payments || [];
+    if (!ps.length) return `<div class="card pt-card pt-center"><div class="pt-emoji">💳</div><p class="pt-mut">${esc(p("nopay"))}</p></div>`;
+    return `<h3 class="pt-h">${esc(p("pay_t"))}</h3>` + ps.map((x) => {
+      const net = Math.max(0, x.due - x.discount), left = Math.max(0, net - x.paid);
+      return `<div class="card pt-card"><div class="pt-row"><b>${esc(monthName(x.month))}</b><span class="pt-badge ${x.status}">${esc(p(x.status))}</span></div>
+        <div class="pt-row"><span class="pt-mut">${esc(p("due"))}</span><span>${money(x.due)}</span></div>
+        ${x.discount ? `<div class="pt-row"><span class="pt-mut">${esc(p("disc"))}</span><span>−${money(x.discount)}</span></div>` : ""}
+        <div class="pt-row"><span class="pt-mut">${esc(p("paidamt"))}</span><span>${money(x.paid)}</span></div>
+        ${left ? `<div class="pt-row"><span class="pt-mut">${esc(p("left"))}</span><b>${money(left)} so'm</b></div>` : ""}</div>`;
+    }).join("");
+  }
+
+  function planKey() { const d = new Date(); return LS_DONE + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+  function planDone() { try { return JSON.parse(lsGet(planKey()) || "[]"); } catch (e) { return []; } }
+  function tLearn() {
+    const done = planDone();
+    const plan = (PLAN[L()] || PLAN.uz).map((x, i) => `<button class="pt-check ${done.includes(i) ? "on" : ""}" data-p="plan" data-v="${i}"><i>${done.includes(i) ? "✓" : ""}</i><span>${esc(x)}</span></button>`).join("");
+    const mats = St.mats;
+    let list = `<p class="pt-mut">${esc(p("loading"))}</p>`;
+    if (mats) list = mats.length ? mats.map((x) => `<div class="pt-mat"><div><b>${esc(x.title)}</b>${x.note ? `<div class="pt-mut">${esc(x.note)}</div>` : ""}</div>${x.url ? `<button class="btn btn-ghost pt-sm" data-p="mat" data-v="${esc(x.url)}">${esc(p("open"))}</button>` : ""}</div>`).join("") : `<p class="pt-mut">${esc(p("nomats"))}</p>`;
+    return `<div class="card pt-card"><h3>✅ ${esc(p("plan"))}</h3><div class="pt-checks">${plan}</div></div>
+      <div class="card pt-card"><h3>📚 ${esc(p("mats"))}</h3>${list}</div>`;
+  }
+
+  function tTop() {
+    const it = St.top;
+    if (!St.me.verified) return `<div class="pt-note">⏳ ${esc(p("unver"))}</div>`;
+    if (!it) return `<p class="pt-mut">${esc(p("loading"))}</p>`;
+    if (!it.length) return `<div class="card pt-card pt-center"><div class="pt-emoji">🏆</div><p class="pt-mut">${esc(p("notop"))}</p></div>`;
+    return `<h3 class="pt-h">🏆 ${esc(p("top_t"))}</h3><div class="card pt-card">${it.map((x, i) => `<div class="pt-rank ${x.me ? "me" : ""}"><i>${i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}</i><span>${esc(x.name)}</span><b>${x.stars} ⭐</b></div>`).join("")}</div>`;
+  }
+
+  // ---------- Chizish va yuklash ----------
+  function render() {
+    const h = St.host;
+    if (!h || !h.isConnected) return;
+    let html;
+    if (St.view === "code") html = codeScreen();
+    else if (St.me) html = cabinet();
+    else if (token() && St.view === "loading") html = `<div class="spinner"></div>`;
+    else html = welcome();
+    h.innerHTML = html;
+  }
+
+  async function loadMe() {
+    if (!token()) { St.me = null; St.view = "welcome"; return render(); }
+    St.view = "loading"; render();
+    const r = await call("s_me", { p_token: token() });
+    if (r && r.ok) { St.me = r; St.view = "cabinet"; }
+    else if (r && r.error === "net" && St.me) { /* eski ma'lumot qoladi */ }
+    else if (r && r.error === "net") { St.view = "welcome"; St.err = p("net"); }
+    else { lsSet(LS_T, null); St.me = null; St.view = "welcome"; }
+    render();
+  }
+  async function refreshMe() {
+    const r = await call("s_me", { p_token: token() });
+    if (r && r.ok) St.me = r;
+  }
+
+  async function onTab(tab) {
+    St.tab = tab; render();
+    if (tab === "learn" && !St.mats) {
+      const r = await call("s_materials", { p_token: token() });
+      St.mats = r && r.ok ? r.items : [];
+      if (St.tab === "learn") render();
+    }
+    if (tab === "top") {
+      const r = await call("s_leaderboard", { p_token: token() });
+      St.top = r && r.ok ? r.items : [];
+      if (St.tab === "top") render();
+    }
+  }
+
+  async function startQuiz() {
+    St.busy = true; render();
+    const r = await call("s_questions", { p_token: token() });
+    St.busy = false;
+    if (!r || !r.ok) { toast(p("net")); return render(); }
+    St.quiz = { items: r.items, capped: !!r.capped, i: 0, ok: 0, done: 0, res: null, pick: null, end: !r.items.length };
+    render();
+  }
+  async function pick(i) {
+    const q = St.quiz; if (!q || q.res || St.busy) return;
+    St.busy = true; q.pick = i; render();
+    const r = await call("s_answer", { p_token: token(), p_qid: q.items[q.i].id, p_choice: i });
+    St.busy = false;
+    if (!r || !r.ok) {
+      if (r && r.error === "done") { q.res = null; return nextQ(); }
+      q.pick = null; toast(p("net")); return render();
+    }
+    if (r.capped) { q.capped = true; q.end = true; St.me.stars.today = r.cap; return render(); }
+    q.res = r; q.done++; if (r.correct) q.ok++;
+    St.me.stars.today = r.today;
+    if (r.correct) { St.me.stars.available++; St.me.stars.total++; }
+    render();
+  }
+  function nextQ() {
+    const q = St.quiz; if (!q) return;
+    q.i++; q.res = null; q.pick = null;
+    if (q.i >= q.items.length) q.end = true;
+    render();
+  }
+
+  async function onClick(e) {
+    const el = e.target.closest("[data-p]");
+    if (!el || !St.host || !St.host.contains(el)) return;
+    const a = el.dataset.p, v = el.dataset.v;
+    if (a === "view") { St.view = v; St.err = ""; return render(); }
+    if (a === "tab") return onTab(v);
+    if (a === "quiz") return startQuiz();
+    if (a === "pick") return pick(Number(v));
+    if (a === "nextq") return nextQ();
+    if (a === "quizclose") { St.quiz = null; await refreshMe(); St.top = null; return render(); }
+    if (a === "plan") { const d = planDone(); const i = Number(v); const k = d.indexOf(i); k >= 0 ? d.splice(k, 1) : d.push(i); lsSet(planKey(), JSON.stringify(d)); return render(); }
+    if (a === "mat") return window.NemixOpenLink ? window.NemixOpenLink(v) : window.open(v, "_blank");
+    if (a === "copycode") { try { await navigator.clipboard.writeText(St.newCode); } catch (x) {} return toast(p("copied")); }
+    if (a === "codedone") { St.newCode = null; St.view = "cabinet"; return loadMe(); }
+    if (a === "redeem") {
+      const r = await call("s_redeem", { p_token: token() });
+      if (r && r.ok) { toast(p("redeemed")); await refreshMe(); return render(); }
+      toast(r && r.error === "not_verified" ? p("need_ver") : r && r.error === "pending_exists" ? p("pending") : r && r.error === "not_enough" ? p("need_more") : p("net"));
+      return;
+    }
+    if (a === "newcode") {
+      const r = await call("s_new_code", { p_token: token() });
+      if (r && r.ok) { St.newCode = r.code; St.view = "code"; return render(); }
+      return toast(p("net"));
+    }
+    if (a === "logout") {
+      if (!confirm(p("logout_q"))) return;
+      await call("p_logout", { p_token: token() });
+      lsSet(LS_T, null); St.me = null; St.quiz = null; St.mats = null; St.top = null; St.tab = "home"; St.view = "welcome"; return render();
+    }
+  }
+
+  async function onSubmit(e) {
+    const f = e.target.closest("[data-pform]");
+    if (!f || !St.host || !St.host.contains(f)) return;
+    e.preventDefault();
+    if (St.busy) return;
+    const kind = f.dataset.pform, fd = new FormData(f);
+    St.err = "";
+    if (kind === "register") {
+      St.busy = true; render();
+      const tg = tgInfo();
+      const r = await call("s_register", { p_name: fd.get("name"), p_phone: fd.get("phone"), p_level: fd.get("level"), p_tg_id: tg.id || null, p_tg_username: tg.un || null });
+      St.busy = false;
+      if (r && r.ok) { lsSet(LS_T, r.token); St.newCode = r.code; St.view = "code"; St.me = null; return render(); }
+      St.err = errText(r && r.error); return render();
+    }
+    if (kind === "restore") {
+      St.busy = true; render();
+      const r = await call("s_restore", { p_code: fd.get("code") });
+      St.busy = false;
+      if (r && r.ok) { lsSet(LS_T, r.token); return loadMe(); }
+      St.err = r && r.error === "net" ? p("net") : p("badcode"); return render();
+    }
+    if (kind === "profile") {
+      const r = await call("s_update_profile", { p_token: token(), p_name: fd.get("name"), p_phone: fd.get("phone") });
+      if (r && r.ok) { await refreshMe(); toast("✓"); return render(); }
+      toast(errText(r && r.error));
+    }
+  }
+
+  let wired = false;
+  window.Portal = {
+    mount(host) {
+      St.host = host;
+      if (!wired) { document.addEventListener("click", onClick); document.addEventListener("submit", onSubmit); wired = true; }
+      host.classList.add("pt-host");
+      if (St.me) { render(); refreshMe().then(render); }
+      else if (token()) loadMe();
+      else render();
+    }
+  };
 })();

@@ -29,13 +29,17 @@
       ),
       phone: "+998 94 799 97 49",
       phone2: "+998 90 799 97 90",
-      telegram: "",
+      telegram: "nemix_admin",
       channel: "nemix_nemistili",
       instagram: "nemix_nemistili",
       website: "",
       address: L("Toshkent shahri, Uchtepa tumani, 23-mavze, 55/4", "г. Ташкент, Учтепинский район, 23-й квартал, 55/4", "Taschkent, Bezirk Uchtepa, 23. Wohnviertel, 55/4"),
-      hours: L("", "", ""),
-      map_url: "https://www.google.com/maps?q=41.290634,69.179546",
+      hours: L("09:00–21:00", "09:00–21:00", "09:00–21:00"),
+      map_url: "",
+      yandex_url: "",
+      lat: "",
+      lng: "",
+      landmark: L("", "", ""),
       consult_minutes: 15,
       s1_num: "A1–C1", s1_label: L("Barcha darajalar", "Все уровни", "Alle Niveaus"),
       s2_num: "15'", s2_label: L("Bepul konsultatsiya", "Бесплатная консультация", "Kostenlose Beratung"),
@@ -73,7 +77,11 @@
           "Сможете представиться\nБудете использовать числа, время и даты\nОтвечать на простые вопросы и задавать их\nПростое общение в магазине и кафе\nЗаполнять простую анкету",
           "Sie können sich vorstellen\nSie verwenden Zahlen, Uhrzeiten und Daten\nSie beantworten einfache Fragen und stellen selbst welche\nEinfache Gespräche im Geschäft und im Café\nSie füllen einfache Formulare aus"
         ),
-        schedule: L("Dars jadvali guruh ochilganda kelishiladi", "Расписание согласуется при наборе группы", "Der Stundenplan wird bei Gruppenstart abgestimmt"),
+        schedule: L(
+          "Standart: haftada 3 kun asosiy ustoz bilan. Intensiv: haftada 5 kun asosiy ustoz bilan. Dars qoldirsangiz yoki mavzu tushunarsiz bo'lsa — support ustoz biriktiriladi. Individual: standart 3 kun, intensiv 5 kun. Kitoblar bonus sifatida bepul beriladi.",
+          "Стандарт: 3 дня в неделю с основным преподавателем. Интенсив: 5 дней в неделю с основным преподавателем. Если пропустили занятие или не поняли тему — закрепляется support-преподаватель. Индивидуально: стандарт 3 дня, интенсив 5 дней. Книги выдаются бесплатно в качестве бонуса.",
+          "Standard: 3 Tage pro Woche mit der Hauptlehrkraft. Intensiv: 5 Tage pro Woche mit der Hauptlehrkraft. Bei verpassten Stunden oder Verständnisproblemen wird eine Support-Lehrkraft zugewiesen. Einzelunterricht: Standard 3 Tage, Intensiv 5 Tage. Bücher gibt es kostenlos als Bonus."
+        ),
         discount_note: L("", "", "")
       },
       {
@@ -91,7 +99,11 @@
           "Расскажете о своём распорядке дня\nРасскажете о прошедших событиях\nНапишете короткое сообщение и письмо\nОбъяснитесь в поездке и при покупках\nПоймёте простые тексты и объявления",
           "Sie sprechen über Ihren Alltag\nSie berichten über vergangene Ereignisse\nSie schreiben kurze Nachrichten und E-Mails\nSie kommen auf Reisen und beim Einkaufen zurecht\nSie verstehen einfache Texte und Anzeigen"
         ),
-        schedule: L("Dars jadvali guruh ochilganda kelishiladi", "Расписание согласуется при наборе группы", "Der Stundenplan wird bei Gruppenstart abgestimmt"),
+        schedule: L(
+          "Standart: haftada 3 kun asosiy ustoz bilan. Intensiv: haftada 5 kun asosiy ustoz bilan. Dars qoldirsangiz yoki mavzu tushunarsiz bo'lsa — support ustoz biriktiriladi. Individual: standart 3 kun, intensiv 5 kun. Kitoblar bonus sifatida bepul beriladi.",
+          "Стандарт: 3 дня в неделю с основным преподавателем. Интенсив: 5 дней в неделю с основным преподавателем. Если пропустили занятие или не поняли тему — закрепляется support-преподаватель. Индивидуально: стандарт 3 дня, интенсив 5 дней. Книги выдаются бесплатно в качестве бонуса.",
+          "Standard: 3 Tage pro Woche mit der Hauptlehrkraft. Intensiv: 5 Tage pro Woche mit der Hauptlehrkraft. Bei verpassten Stunden oder Verständnisproblemen wird eine Support-Lehrkraft zugewiesen. Einzelunterricht: Standard 3 Tage, Intensiv 5 Tage. Bücher gibt es kostenlos als Bonus."
+        ),
         discount_note: L("", "", "")
       },
       {
@@ -109,7 +121,11 @@
           "Сможете беседовать на темы работы и учёбы\nРассказывать об опыте и планах\nПисать официальные письма и заявления\nПонимать более сложные тексты\nБудете готовы к официальному экзамену B1",
           "Sie führen Gespräche zu Arbeit und Studium\nSie sprechen über Erfahrungen und Pläne\nSie schreiben formelle Briefe und Bewerbungen\nSie verstehen komplexere Texte\nSie sind bereit für die offizielle B1-Prüfung"
         ),
-        schedule: L("Dars jadvali guruh ochilganda kelishiladi", "Расписание согласуется при наборе группы", "Der Stundenplan wird bei Gruppenstart abgestimmt"),
+        schedule: L(
+          "Standart: haftada 3 kun asosiy ustoz bilan. Intensiv: haftada 5 kun asosiy ustoz bilan. Dars qoldirsangiz yoki mavzu tushunarsiz bo'lsa — support ustoz biriktiriladi. Individual: standart 3 kun, intensiv 5 kun. Kitoblar bonus sifatida bepul beriladi.",
+          "Стандарт: 3 дня в неделю с основным преподавателем. Интенсив: 5 дней в неделю с основным преподавателем. Если пропустили занятие или не поняли тему — закрепляется support-преподаватель. Индивидуально: стандарт 3 дня, интенсив 5 дней. Книги выдаются бесплатно в качестве бонуса.",
+          "Standard: 3 Tage pro Woche mit der Hauptlehrkraft. Intensiv: 5 Tage pro Woche mit der Hauptlehrkraft. Bei verpassten Stunden oder Verständnisproblemen wird eine Support-Lehrkraft zugewiesen. Einzelunterricht: Standard 3 Tage, Intensiv 5 Tage. Bücher gibt es kostenlos als Bonus."
+        ),
         discount_note: L("", "", "")
       },
       {
@@ -127,7 +143,11 @@
           "Сможете обсуждать сложные темы\nПисать подробные тексты и отчёты\nПонимать медиа и научные тексты\nПодготовитесь к собеседованиям\nБудете готовы к экзамену B2",
           "Sie diskutieren über komplexe Themen\nSie schreiben ausführliche Texte und Berichte\nSie verstehen Medien und Fachtexte\nSie bereiten sich auf Vorstellungsgespräche vor\nSie sind bereit für die B2-Prüfung"
         ),
-        schedule: L("Dars jadvali guruh ochilganda kelishiladi", "Расписание согласуется при наборе группы", "Der Stundenplan wird bei Gruppenstart abgestimmt"),
+        schedule: L(
+          "Standart: haftada 3 kun asosiy ustoz bilan. Intensiv: haftada 5 kun asosiy ustoz bilan. Dars qoldirsangiz yoki mavzu tushunarsiz bo'lsa — support ustoz biriktiriladi. Individual: standart 3 kun, intensiv 5 kun. Kitoblar bonus sifatida bepul beriladi.",
+          "Стандарт: 3 дня в неделю с основным преподавателем. Интенсив: 5 дней в неделю с основным преподавателем. Если пропустили занятие или не поняли тему — закрепляется support-преподаватель. Индивидуально: стандарт 3 дня, интенсив 5 дней. Книги выдаются бесплатно в качестве бонуса.",
+          "Standard: 3 Tage pro Woche mit der Hauptlehrkraft. Intensiv: 5 Tage pro Woche mit der Hauptlehrkraft. Bei verpassten Stunden oder Verständnisproblemen wird eine Support-Lehrkraft zugewiesen. Einzelunterricht: Standard 3 Tage, Intensiv 5 Tage. Bücher gibt es kostenlos als Bonus."
+        ),
         discount_note: L("", "", "")
       },
       {
@@ -145,7 +165,11 @@
           "Понимаете сложные и длинные тексты\nСвободно и точно излагаете мысли\nГотовите академические тексты и презентации\nУверенно общаетесь в профессиональной среде\nБудете готовы к экзамену C1",
           "Sie verstehen anspruchsvolle, lange Texte\nSie drücken sich frei und präzise aus\nSie erstellen akademische Texte und Präsentationen\nSie kommunizieren sicher im Berufsumfeld\nSie sind bereit für die C1-Prüfung"
         ),
-        schedule: L("", "", ""),
+        schedule: L(
+          "Standart: haftada 3 kun asosiy ustoz bilan. Intensiv: haftada 5 kun asosiy ustoz bilan. Dars qoldirsangiz yoki mavzu tushunarsiz bo'lsa — support ustoz biriktiriladi. Individual: standart 3 kun, intensiv 5 kun. Kitoblar bonus sifatida bepul beriladi.",
+          "Стандарт: 3 дня в неделю с основным преподавателем. Интенсив: 5 дней в неделю с основным преподавателем. Если пропустили занятие или не поняли тему — закрепляется support-преподаватель. Индивидуально: стандарт 3 дня, интенсив 5 дней. Книги выдаются бесплатно в качестве бонуса.",
+          "Standard: 3 Tage pro Woche mit der Hauptlehrkraft. Intensiv: 5 Tage pro Woche mit der Hauptlehrkraft. Bei verpassten Stunden oder Verständnisproblemen wird eine Support-Lehrkraft zugewiesen. Einzelunterricht: Standard 3 Tage, Intensiv 5 Tage. Bücher gibt es kostenlos als Bonus."
+        ),
         discount_note: L("", "", "")
       }
     ],
@@ -206,6 +230,55 @@
         requirements: L("Nemis tilini yaxshi bilish\nO'qitish tajribasi (afzallik)\nMas'uliyat va muloqot qobiliyati",
                         "Хорошее знание немецкого\nОпыт преподавания (приветствуется)\nОтветственность и коммуникабельность",
                         "Gute Deutschkenntnisse\nLehrerfahrung (von Vorteil)\nVerantwortungsbewusstsein und Kommunikationsstärke") }
+    ],
+
+    faq: [
+      { position: 1, category: "course",
+        q: L("Standart va intensiv kursning farqi nima?", "Чем отличаются стандартный и интенсивный курсы?", "Was ist der Unterschied zwischen Standard- und Intensivkurs?"),
+        a: L("Standart guruhda haftada 3 kun, intensiv guruhda haftada 5 kun asosiy ustozdan dars olasiz. Individual darslarda ham xuddi shunday: standart — 3 kun, intensiv — 5 kun.",
+             "В стандартной группе занятия 3 дня в неделю, в интенсивной — 5 дней в неделю с основным преподавателем. В индивидуальном формате так же: стандарт — 3 дня, интенсив — 5 дней.",
+             "In der Standardgruppe haben Sie 3 Tage, in der Intensivgruppe 5 Tage pro Woche Unterricht bei der Hauptlehrkraft. Im Einzelunterricht ebenso: Standard 3 Tage, Intensiv 5 Tage.") },
+      { position: 2, category: "course",
+        q: L("Dars qoldirsam yoki mavzuni tushunmasam nima bo'ladi?", "Что, если я пропущу занятие или не пойму тему?", "Was passiert, wenn ich eine Stunde verpasse oder etwas nicht verstehe?"),
+        a: L("Sizga yordamchi, ya'ni support ustoz biriktiriladi. U o'tkazib yuborgan yoki tushunarsiz qolgan mavzuni tushuntirib beradi.",
+             "Вам закрепляется помощник — support-преподаватель. Он объяснит пропущенную или непонятную тему.",
+             "Ihnen wird eine Support-Lehrkraft zugewiesen. Sie erklärt das verpasste oder unklare Thema.") },
+      { position: 3, category: "course",
+        q: L("Kitoblar pullikmi?", "Книги платные?", "Kosten die Bücher extra?"),
+        a: L("Yo'q. Barcha kurslarda kitoblar bonus sifatida bepul beriladi.",
+             "Нет. На всех курсах книги выдаются бесплатно в качестве бонуса.",
+             "Nein. In allen Kursen gibt es die Bücher kostenlos als Bonus.") },
+      { position: 4, category: "course",
+        q: L("Qaysi darajadan boshlashim kerak?", "С какого уровня мне начать?", "Mit welchem Niveau soll ich beginnen?"),
+        a: L("Nemis tilini umuman bilmasangiz, A1 dan boshlang. Oldin o'rgangan bo'lsangiz, Telegram'da yozing yoki qo'ng'iroq qiling, mos darajani tanlashda yordam beramiz.",
+             "Если вы совсем не знаете немецкий, начните с A1. Если уже учили, напишите в Telegram или позвоните — поможем выбрать уровень.",
+             "Wenn Sie noch kein Deutsch können, beginnen Sie mit A1. Hatten Sie schon Unterricht, schreiben Sie uns auf Telegram oder rufen Sie an – wir helfen bei der Niveauwahl.") },
+      { position: 5, category: "course",
+        q: L("Kursga qanday yozilaman?", "Как записаться на курс?", "Wie melde ich mich an?"),
+        a: L("Kurs kartasini oching va «Kursga yozilish» tugmasini bosing, yoki bizga qo'ng'iroq qiling yoki Telegram'da yozing.",
+             "Откройте карточку курса и нажмите «Записаться на курс», либо позвоните нам или напишите в Telegram.",
+             "Öffnen Sie die Kurskarte und tippen Sie auf «Für den Kurs anmelden» oder rufen Sie an bzw. schreiben Sie uns auf Telegram.") },
+      { position: 6, category: "consult",
+        q: L("Konsultatsiya pullikmi?", "Консультация платная?", "Ist die Beratung kostenpflichtig?"),
+        a: L("Yo'q, konsultatsiya mutlaqo bepul.", "Нет, консультация абсолютно бесплатная.", "Nein, die Beratung ist völlig kostenlos.") },
+      { position: 7, category: "consult",
+        q: L("Konsultatsiya qancha davom etadi?", "Сколько длится консультация?", "Wie lange dauert die Beratung?"),
+        a: L("Har bir mijoz uchun 15 daqiqa.", "15 минут для каждого клиента.", "15 Minuten pro Person.") },
+      { position: 8, category: "consult",
+        q: L("Qanday savollar bera olaman?", "Какие вопросы можно задать?", "Welche Fragen kann ich stellen?"),
+        a: L("Germaniya haqidagi barcha savollar: o'qish, kasb ta'limi (Ausbildung), ish, til darajalari va hujjatlar bo'yicha.",
+             "Любые вопросы о Германии: учёба, профобучение (Ausbildung), работа, уровни языка и документы.",
+             "Alle Fragen zu Deutschland: Studium, Ausbildung, Arbeit, Sprachniveaus und Unterlagen.") },
+      { position: 9, category: "consult",
+        q: L("Konsultatsiyaga qanday yozilaman?", "Как записаться на консультацию?", "Wie buche ich die Beratung?"),
+        a: L("«Bepul konsultatsiya» tugmasini bosib formani to'ldiring, yoki Telegram'da @nemix_admin ga yozing.",
+             "Нажмите «Бесплатная консультация» и заполните форму или напишите в Telegram: @nemix_admin.",
+             "Tippen Sie auf «Kostenlose Beratung» und füllen Sie das Formular aus oder schreiben Sie an @nemix_admin auf Telegram.") },
+      { position: 10, category: "consult",
+        q: L("Konsultatsiya Germaniyaga borishni kafolatlaydimi?", "Гарантирует ли консультация поездку в Германию?", "Garantiert die Beratung einen Aufenthalt in Deutschland?"),
+        a: L("Yo'q. Qabul va viza qarorlarini Germaniyaning tegishli organlari qabul qiladi. Biz yo'nalishlar, talablar va til darajalari bo'yicha ma'lumot va yo'l-yo'riq beramiz.",
+             "Нет. Решения о приёме и визе принимают соответствующие органы Германии. Мы даём информацию и ориентиры по направлениям, требованиям и уровням языка.",
+             "Nein. Über Zulassung und Visum entscheiden die zuständigen Behörden in Deutschland. Wir informieren und orientieren zu Wegen, Anforderungen und Sprachniveaus.") }
     ],
 
     reviews: []
