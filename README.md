@@ -1,3 +1,5 @@
+# 🆕 v4.1: yangi bosh ekran (markaz suratlari bilan, `images/center/` papkasi). GitHub'ga `index.html`, `css/`, `js/`, `images/` ni yuklang.
+
 # 🆕 YANGILANISH v4 — O'quvchi kabineti, ustozlar paneli, bonus tizimi
 
 ## Nimalar qo'shildi

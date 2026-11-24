@@ -201,17 +201,16 @@
     const title = esc(tr(s.hero_title)).replace(/Nemix/g, "<em>Nemix</em>");
     const stats = [1, 2, 3].map((i) => (s["s" + i + "_num"] ? `<div class="stat"><b>${esc(s["s" + i + "_num"])}</b><span>${esc(tr(s["s" + i + "_label"]))}</span></div>` : "")).join("");
     return `
-    <section class="hero">
-      <span class="pill"><i></i>${esc(t("consult_badge", { n: consultMin() }))}</span>
-      <h1>${title}</h1>
-      <p>${esc(tr(s.hero_text))}</p>
-      <div class="hero-actions">
-        <button class="btn btn-primary" data-action="consult">${esc(t("btn_consult"))}</button>
-        <button class="btn btn-dark" data-nav="courses">${esc(t("btn_courses"))}</button>
+    <section class="hero hero2">
+      <div class="hero-in">
+        <span class="pill"><i></i>${esc(t("consult_badge", { n: consultMin() }))}</span>
+        <h1>${title}</h1>
+        <p>${esc(tr(s.hero_text))}</p>
+        <button class="btn btn-primary btn-block hero-cta" data-action="consult">${esc(t("btn_consult"))}</button>
+        <button class="hero-link" data-nav="courses">${esc(t("btn_courses"))} →</button>
+        <ul class="hero-facts"><li>${esc(t("hero_f1"))}</li><li>${esc(t("hero_f2"))}</li><li>${esc(t("hero_f3"))}</li></ul>
       </div>
-      <div class="hero-art"><span class="chip-float a">A1 → C1</span><span class="chip-float b">🇩🇪 Deutschland</span>${ico("teacher")}</div>
     </section>
-    <div class="stats">${stats}</div>
 
     <section class="section">
       <div class="section-head"><div><h2>${esc(t("path_title"))}</h2><p>${esc(t("path_sub"))}</p></div></div>
@@ -231,6 +230,11 @@
     <section class="section">
       <div class="section-head"><div><h2>${esc(t("about_title"))}</h2></div></div>
       <div class="card about">${esc(tr(s.about))}</div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><h2>${esc(t("gallery_title"))}</h2><p>${esc(t("gallery_sub"))}</p></div></div>
+      <div class="carousel gallery">${[["entrance", "g1", ""], ["reception", "g2", ""], ["class", "g3", " 1"], ["class2", "g3", " 2"], ["class3", "g3", " 3"], ["board", "g4", ""]].map(([f, k, n]) => `<figure class="shot"><img src="images/center/${f}.jpg" alt="${esc(t(k) + n)}" loading="lazy" /><figcaption>${esc(t(k) + n)}</figcaption></figure>`).join("")}</div>
     </section>
 
     ${S.features.length ? `<section class="section">
